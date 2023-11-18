@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html  lang="en" xmlns:th="http://thymeleaf.org"
+       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+       layout:decorate="~{layouts/masterlayout}">
+<section layout:fragment="content">
+  <h1>Product Detail</h1>
+  <a href="/product/" class="btn btn-info">Back to Index</a>
+  <div class="mt-1 row">
+    <div class="col-5">
+      <img th:attr="src=|/products/${product.getId()}/${product.getImagePath()}|" src="" width="250px" height="250px" alt="" srcset="">
+    </div>
+    <div class="col">
+      <ul>
+        <li><p>Product Name : <strong th:text="${product.getName()}"></strong></p></li>
+        <li><p>Product Price : <strong th:text="${product.getRetailPrice()}"></strong></p></li>
+        <li><p>Product Category : <strong th:text="${product.getCategory().getCategoryName()}"></strong></p></li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+</html>

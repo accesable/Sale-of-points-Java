@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html  lang="en" xmlns:th="http://thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/masterlayout}">
+<section layout:fragment="content">
+    <h1>Add A Product</h1>
+    <a href="/product" class="btn btn-info">Back to Index</a>
+    <div th:if="${successMessage}" class="alert alert-success">
+        <p th:text="${successMessage}"></p>
+    </div>
+    <div class="mt-1">
+        <form method="post" action="add" enctype="multipart/form-data">
+            <div class="mb-3">
+                <label for="product-name" class="form-label">Product Name</label>
+                <input name="name" id="product-name" type="text" class="form-control" placeholder="Laptop">
+            </div>
+            <div class="mb-3">
+                <label for="categorySelect" class="form-label">State</label>
+                <select class="form-control" id="categorySelect" name="category">
+                    <option th:each="category : ${categories}"
+                            th:value="${category.getId()}"
+                            th:text="${category.getCategoryName()}">Category</option>
+                </select>
+            </div>
+            <div class="mb-3">
+                <label for="import-price" class="form-label">Imported Price</label>
+                <input type="number" name="importedPrice" class="form-control" id="import-price" placeholder="0.00">
+            </div>
+            <div class="mb-3">
+                <label for="retail-price" class="form-label">Retail Price</label>
+                <input type="number" name="retailPrice" class="form-control" id="retail-price"  placeholder="0.00">
+            </div>
+            <div class="input-group mb-3">
+                <div class="input-group-prepend">
+                    <span class="input-group-text">Upload</span>
+                </div>
+                <div class="custom-file">
+                    <input type="file" name="image" class="custom-file-input" id="inputGroupFile01">
+                    <label class="custom-file-label" for="inputGroupFile01">Choose file</label>
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-lg">Add Product</button>
+        </form>
+    </div>
+
+</section>
+</html>

@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html  lang="en" xmlns:th="http://thymeleaf.org"
+       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+       layout:decorate="~{layouts/masterlayout}">
+<section layout:fragment="content">
+    <h1>Delete A Product</h1>
+    <a href="/product/" class="btn btn-info">Back to Index</a>
+    <div class="mt-1">
+        <form method="post" th:attr="action=|/product/delete/${product.getId()}|">
+            <h3>Are you Sure to delete this product ? <strong th:text="${product.getName()}"></strong></h3>
+            <button type="submit" class="btn btn-danger btn-lg">Delete This Product</button>
+        </form>
+    </div>
+</section>
+
+</html>
