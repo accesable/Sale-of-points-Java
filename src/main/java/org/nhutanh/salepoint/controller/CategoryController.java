@@ -1,11 +1,9 @@
 package org.nhutanh.salepoint.controller;
 
 import org.nhutanh.salepoint.model.Category;
-import org.nhutanh.salepoint.model.CategoryRepository;
-import org.nhutanh.salepoint.model.Product;
+import org.nhutanh.salepoint.repositories.CategoryRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;

@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/css/login.css">
+    <link href="/css/bootstrap.min.css" rel="stylesheet" >
+    <title>Login</title>
+</head>
+<body>
+<div class="wrapper">
+    <div class="container main">
+        <div class="row">
+            <div class="col-md-6 side-image" style="background-image: url('/images/fabrizio-conti-FmhgEdm6p7E-unsplash.jpg')">
+                <!-------------      image     ------------->
+
+                <div class="text">
+                    <p>Join the community <i>- David Maderin</i></p>
+                </div>
+
+            </div>
+            <div class="col-md-6 right">
+                <form action="/auth/register" method="post">
+                    <div class="input-box">
+
+                        <header>Register For A User</header>
+                        <div class="input-field">
+                            <input name="name" type="text" class="input" id="name" required="" autocomplete="off">
+                            <label for="name">Username</label>
+                        </div>
+                        <div class="input-field">
+                            <input name="email" type="email" class="input" id="email" required="" autocomplete="off">
+                            <label for="email">Email</label>
+                        </div>
+                        <div class="input-field">
+                            <input name="roles" type="text" class="input" id="roles" required="" placeholder="ROLE_USER,ROLE_ADMIN" autocomplete="off">
+                            <label for="roles">User Roles</label>
+                        </div>
+
+                        <div class="input-field">
+                            <input name="password" type="password" class="input" id="password" required="">
+                            <label for="password">Password</label>
+                        </div>
+                        <div class="input-field">
+                            <input type="submit" class="submit" value="Sign In">
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="/js/bootstrap.min.js"></script>
+</body>
+</html>

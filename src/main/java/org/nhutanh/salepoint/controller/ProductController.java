@@ -1,16 +1,15 @@
 package org.nhutanh.salepoint.controller;
 
-import com.google.gson.Gson;
 import org.nhutanh.salepoint.model.Category;
-import org.nhutanh.salepoint.model.CategoryRepository;
+import org.nhutanh.salepoint.repositories.CategoryRepository;
 import org.nhutanh.salepoint.model.Product;
-import org.nhutanh.salepoint.model.ProductRepository;
+import org.nhutanh.salepoint.repositories.ProductRepository;
 import org.nhutanh.salepoint.service.BarcodeService;
+import org.nhutanh.salepoint.service.FileUtilsService;
 import org.nhutanh.salepoint.service.QRCodeService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.Resource;
-import org.springframework.core.io.ResourceLoader;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -28,8 +27,6 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 
-import static groovyjarjarantlr4.v4.gui.GraphicsSupport.saveImage;
-
 @Controller
 @RequestMapping("/product")
 public class ProductController {
@@ -40,13 +37,15 @@ public class ProductController {
     @Autowired
     CategoryRepository categoryRepository;
     @Autowired
-    private ResourceLoader resourceLoader;
+    FileUtilsService fileUtilsService;
+
     @Autowired
     private BarcodeService barcodeService;
     @Autowired
     private QRCodeService qrCodeService;
 
     @GetMapping(value = {"", "/"})
+    @PreAuthorize("hasAuthority('ROLE_USER')")
     public String index(Model model){
         List<Product> productList = new ArrayList<>();
         productRepository.findAll().forEach(productList::add);
@@ -56,12 +55,18 @@ public class ProductController {
     }
 
     @GetMapping(value = {"/add","/add/"})
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public String add(Model model){
         List<Category> categoryList = new ArrayList<>();
         categoryRepository.findAll().forEach(categoryList::add);
 
         model.addAttribute("categories",categoryList);
         return "Product/Add";
+    }
+    @GetMapping(value = {"/welcome","welcome/"})
+    @ResponseBody
+    public String welcome(){
+        return "Welcome Page";
     }
 
     @PostMapping(value = {"/add","/add/"})
@@ -73,7 +78,7 @@ public class ProductController {
 
 
         if (!imageFile.isEmpty()){
-            String imagePath = saveImage(imageFile,insertedProduct.getId());
+            String imagePath = fileUtilsService.saveImage(imageFile,insertedProduct.getId());
             insertedProduct.setImagePath(imagePath);
             insertedProduct.setQrCodePath(qrCodeService.generateQRCodeImage(insertedProduct.getId()));
             insertedProduct.setBarCodePath(barcodeService.generateBarcodeImage(insertedProduct.getId()));
@@ -85,43 +90,7 @@ public class ProductController {
         return "Product/Add";
     }
 
-    private String saveImage(MultipartFile imageFile,String ID) throws IOException, IOException {
-        if (imageFile.isEmpty()) {
-            return null; // Handle as appropriate
-        }
 
-        // Get the directory path
-        Path staticPath = Paths.get("src/main/resources/static/products/"+ID);
-        if (!Files.exists(staticPath)) {
-            Files.createDirectories(staticPath);
-        }
-
-        // Generate a unique filename
-        String filename = "image-"+imageFile.getOriginalFilename();
-        if (filename == null){
-            filename = "product-image";
-        }
-        // Resolve the file path
-        Path filePath = staticPath.resolve(filename);
-
-        // Copy the file to the target location
-        Files.copy(imageFile.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
-
-        return filename;
-    }
-    public void deleteFolder(String productID) throws IOException {
-        Path path = Paths.get("src/main/resources/static/products/"+productID);
-        if (Files.exists(path)) {
-            Files.walk(path)
-                    .sorted(Comparator.reverseOrder())
-                    .forEach(p -> {
-                        try {
-                            Files.delete(p);
-                        } catch (IOException e) {
-                        }
-                    });
-        }
-    }
 
     @GetMapping(value = {"/delete/{id}","/delete/{id}/"})
     public String delete(@PathVariable String id,Model model){
@@ -139,7 +108,7 @@ public class ProductController {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Category not found");
         }
         productRepository.deleteById(id);
-        deleteFolder(id);
+        fileUtilsService.deleteFolder(id);
         redirectAttributes.addFlashAttribute("successMessage","Product "+existingProduct.getName()+" Deleted");
         return "redirect:/product/";
     }
