@@ -31,13 +31,16 @@ public class ProductController {
     private CategoryRepository categoryRepository;
 
     @PostMapping("")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('USER')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> createProduct(@RequestParam("name") String name,
                                            @RequestParam("importedPrice") double importedPrice,
                                            @RequestParam("retailPrice") double retailPrice,
                                            @RequestParam("categoryId") String categoryId,
                                            @RequestParam("imageFile") MultipartFile imageFile) {
         try {
+            if (name==null){
+                return ResponseEntity.badRequest().body("name is required");
+            }
 
             Product product = new Product();
             product.setName(name);

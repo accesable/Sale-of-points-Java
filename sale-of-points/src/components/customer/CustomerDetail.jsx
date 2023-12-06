@@ -21,20 +21,22 @@ function Row(props) {
   const { row } = props;
   const [open, setOpen] = React.useState(false);
 
-  const [orderDetail,setOrderDetail] = useState(null);
+  const [orderDetail, setOrderDetail] = useState(null);
 
-  const handleTransactionDetails = async () =>{
-    setOpen(!open)
+  const handleTransactionDetails = async () => {
+    setOpen(!open);
     if (!open && !orderDetail) {
-        try {
-          // Replace '/order-details/' with your actual API endpoint
-          const response = await api.get(`/order-details/find?orderId=${row.orderId}`);
-          setOrderDetail(response.data);
-        } catch (error) {
-          console.error("Error fetching order details", error);
-        }
+      try {
+        // Replace '/order-details/' with your actual API endpoint
+        const response = await api.get(
+          `/order-details/find?orderId=${row.orderId}`
+        );
+        setOrderDetail(response.data);
+      } catch (error) {
+        console.error("Error fetching order details", error);
       }
-  }
+    }
+  };
 
   return (
     <React.Fragment>
@@ -64,7 +66,7 @@ function Row(props) {
         <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={6}>
           <Collapse in={open} timeout="auto" unmountOnExit>
             <Box sx={{ margin: 1 }}>
-            <Typography variant="h6" gutterBottom component="div">
+              <Typography variant="h6" gutterBottom component="div">
                 History
               </Typography>
               <Table size="small" aria-label="purchases">
@@ -79,24 +81,23 @@ function Row(props) {
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {orderDetail && orderDetail.map((detail) => (
-                    <TableRow key={detail.id}>
-                      <TableCell component="th" scope="row">
-                        {detail.id}
-                      </TableCell>
-                      <TableCell>{detail.product.name}</TableCell>
-                      <TableCell align="right">{detail.product.importedPrice}</TableCell>
-                      <TableCell align="right">
-                        {detail.quantity}
-                      </TableCell>
-                      <TableCell align="right">
-                        {detail.price}
-                      </TableCell>
-                      <TableCell align="right">
-                        {detail.product.categoryName}
-                      </TableCell>
-                    </TableRow>
-                  ))}
+                  {orderDetail &&
+                    orderDetail.map((detail) => (
+                      <TableRow key={detail.id}>
+                        <TableCell component="th" scope="row">
+                          {detail.id}
+                        </TableCell>
+                        <TableCell>{detail.product.name}</TableCell>
+                        <TableCell align="right">
+                          {detail.product.retailPrice}
+                        </TableCell>
+                        <TableCell align="right">{detail.quantity}</TableCell>
+                        <TableCell align="right">{detail.price}</TableCell>
+                        <TableCell align="right">
+                          {detail.product.categoryName}
+                        </TableCell>
+                      </TableRow>
+                    ))}
                 </TableBody>
               </Table>
             </Box>
@@ -124,30 +125,42 @@ const CustomerDetail = () => {
     fetchProduct();
   }, [customerId]);
 
-
   return (
     <Container>
-      <TableContainer component={Paper}>
-        <Table aria-label="collapsible table">
-          <TableHead>
-            <TableRow>
-              <TableCell />
-              <TableCell >Transaction</TableCell>
-              <TableCell align="right">Amount</TableCell>
-              <TableCell align="right">Customer Give</TableCell>
-              <TableCell align="right">Customer Receive</TableCell>
-              <TableCell align="right">Payment Method</TableCell>
-              <TableCell align="right">Status</TableCell>
-              <TableCell align="right">Transaction Date</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {customer && customer.transactionDTOS.map((row) => (
-            <Row key={row.name} row={row} />
-          ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
+      {customer ? (
+        <>
+          <Typography variant="h4" gutterBottom>
+            Customer Name : <u>{customer.name}</u>
+          </Typography>
+          <Typography variant="h5" gutterBottom>
+            Customer Address : <u>{customer.address}</u> 
+          </Typography>
+          <TableContainer component={Paper}>
+            <Table aria-label="collapsible table">
+              <TableHead>
+                <TableRow>
+                  <TableCell />
+                  <TableCell>#Transaction ID</TableCell>
+                  <TableCell align="right">Amount</TableCell>
+                  <TableCell align="right">Customer Give</TableCell>
+                  <TableCell align="right">Customer Receive</TableCell>
+                  <TableCell align="right">Payment Method</TableCell>
+                  <TableCell align="right">Status</TableCell>
+                  <TableCell align="right">Transaction Date</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {customer &&
+                  customer.transactionDTOS.map((row) => (
+                    <Row key={row.name} row={row} />
+                  ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        </>
+      ) : (
+        <></>
+      )}
     </Container>
   );
 };

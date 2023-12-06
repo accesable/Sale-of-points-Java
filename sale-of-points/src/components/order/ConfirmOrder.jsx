@@ -17,10 +17,9 @@ import Autocomplete from "@mui/material/Autocomplete";
 import TextField from "@mui/material/TextField";
 import api from "../../http-common";
 import debounce from "lodash.debounce";
-import ClearIcon from "@mui/icons-material/Clear";
 import { Clear, Info } from "@mui/icons-material";
-import { Button } from "react-bootstrap";
-import { Toast } from "react-bootstrap";
+import Snackbar from '@mui/material/Snackbar';
+import MuiAlert from '@mui/material/Alert';
 
 export default function ConfirmOrder() {
   const navigate = useNavigate();
@@ -36,6 +35,7 @@ export default function ConfirmOrder() {
   const [selectedPayMethod, setSelectedPayMethod] = useState("");
   const [customerGive, setCustomerGive] = useState("");
   const [showSuccess, setShowSuccess] = useState(false);
+  const [showError, setShowError] = useState(false);
 
   const handleSubmitConfirmOrder = async (e) => {
     // Prepare the order detail list
@@ -50,11 +50,13 @@ export default function ConfirmOrder() {
       address: customerAddress,
     };
     // Prepare the transaction object
+
     const transaction = {
       amount: totalPrice,
       paymentMethod: selectedPayMethod,
       customerGive: customerGive,
       customerReceive: (customerGive - totalPrice).toFixed(2),
+      status: selectedPayMethod === "Cash" ? "Success" : "Pending",
     };
     // Prepare the complete order object
     const orderData = {
@@ -70,10 +72,12 @@ export default function ConfirmOrder() {
       // Handle successful response (e.g., navigate to a success page or display a success message)
     } catch (error) {
       console.error("Error submitting order", error);
+      toggleShowError()
       // Handle errors (e.g., display an error message)
     }
   };
   const toggleShowSuccess = () => setShowSuccess(!showSuccess);
+  const toggleShowError = () => setShowError(!showError);
 
   const payMethods = ["Cash", "Credit Card", "VnPay"];
 
@@ -216,6 +220,7 @@ export default function ConfirmOrder() {
                             id="autocomplete-demo"
                             className="mb-3"
                             disableClearable
+                        
                             options={options.map(
                               (option) => option.phoneNumber
                             )}
@@ -224,6 +229,7 @@ export default function ConfirmOrder() {
                             filterOptions={(x) => x} // Disable built-in filtering
                             renderInput={(params) => (
                               <TextField
+                              required
                                 {...params}
                                 label="Customer Phone Number"
                                 InputProps={{
@@ -339,9 +345,9 @@ export default function ConfirmOrder() {
 
                         <MDBBtn
                           color="success"
-                          block
                           size="lg"
                           onClick={handleSubmitConfirmOrder}
+                          disabled={orderDetails.length === 0 }
                         >
                           <div className="d-flex justify-content-between">
                             <span>
@@ -350,19 +356,32 @@ export default function ConfirmOrder() {
                             </span>
                           </div>
                         </MDBBtn>
-                        <Toast show={showSuccess} onClose={toggleShowSuccess}>
-                          <Toast.Header>
-                            <img
-                              src="holder.js/20x20?text=%20"
-                              className="rounded me-2"
-                              alt=""
-                            />
-                            <strong className="me-auto">Nofitication</strong>
-                          </Toast.Header>
-                          <Toast.Body>
+                        <Snackbar
+                          open={showSuccess}
+                          autoHideDuration={6000}
+                          onClose={() => setShowSuccess(false)}
+                        >
+                          <Alert
+                            onClose={() => setShowSuccess(false)}
+                            severity="success"
+                            sx={{ width: "100%" }}
+                          >
                             Order Confirmed
-                          </Toast.Body>
-                        </Toast>
+                          </Alert>
+                        </Snackbar>
+                        <Snackbar
+                          open={showError}
+                          autoHideDuration={6000}
+                          onClose={() => setShowError(false)}
+                        >
+                          <Alert
+                            onClose={() => setShowError(false)}
+                            severity="error"
+                            sx={{ width: "100%" }}
+                          >
+                            Order Is Invalid 
+                          </Alert>
+                        </Snackbar>
                       </MDBCardBody>
                     </MDBCard>
                   </MDBCol>
@@ -375,3 +394,6 @@ export default function ConfirmOrder() {
     </section>
   );
 }
+const Alert = React.forwardRef(function Alert(props, ref) {
+  return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
+});

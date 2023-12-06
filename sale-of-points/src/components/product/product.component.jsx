@@ -88,7 +88,7 @@ function MyTable() {
             {hasImportedPrice && <th scope="col">Imported Price</th>}
             <th scope="col">Retail Price</th>
             <th>Created At</th>
-            <th>Actions</th>
+            {hasImportedPrice && <th>Actions</th>}
           </tr>
         </thead>
         <tbody>
@@ -100,7 +100,7 @@ function MyTable() {
               {hasImportedPrice && <td>{`$${product.importedPrice}`}</td>}
               <td>{product.retailPrice}</td>
               <td>{new Date(product.creationDate).toLocaleString()}</td>
-              <td>
+              {hasImportedPrice && <td>
                 <Button variant="primary" onClick={() => handleInfoClick(product.id)}>
                   <InfoSquare size={16} />
                 </Button>
@@ -113,7 +113,7 @@ function MyTable() {
                 >
                   <Trash size={16} />
                 </Button>
-              </td>
+              </td>}
             </tr>
           ))}
         </tbody>

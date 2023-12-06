@@ -10,7 +10,8 @@ import FilledInput from "@mui/material/FilledInput";
 import InputLabel from "@mui/material/InputLabel";
 import MenuItem from "@mui/material/MenuItem";
 import Select, { SelectChangeEvent } from "@mui/material/Select";
-import Toast from "react-bootstrap/Toast";
+import Snackbar from "@mui/material/Snackbar";
+import MuiAlert from "@mui/material/Alert";
 import api from "../../http-common";
 function AddProductForm() {
   const [categories, setCategories] = useState([]);
@@ -19,8 +20,10 @@ function AddProductForm() {
   const [importedPrice, setImportedPrice] = useState("");
   const [retailPrice, setRetailPrice] = useState("");
   const [imageFile, setImageFile] = useState(null);
+  const [showError, setShowError] = useState(false);
 
   const [imagePreview, setImagePreview] = useState(null);
+  const toggleShowError = () => setShowError(!showError);
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
@@ -58,6 +61,7 @@ function AddProductForm() {
       });
       toggleShowA();
     } catch (error) {
+      toggleShowError();
       console.error("Error adding product", error);
     }
   };
@@ -140,26 +144,39 @@ function AddProductForm() {
             </Form.Group>
             <Form.Group controlId="formFile" className="mb-3">
               <Form.Label>Product Image Here</Form.Label>
-              <Form.Control
-                type="file"
-                onChange={handleImageChange}
-              />
+              <Form.Control type="file" onChange={handleImageChange} />
             </Form.Group>
 
             <Button variant="primary" type="submit">
               Save Product
             </Button>
-            <Toast show={showA} onClose={toggleShowA} className="mt-2">
-              <Toast.Header>
-                <img
-                  src="holder.js/20x20?text=%20"
-                  className="rounded me-2"
-                  alt=""
-                />
-                <strong className="me-auto">Message</strong>
-              </Toast.Header>
-              <Toast.Body>Product Added</Toast.Body>
-            </Toast>
+            <Snackbar
+              anchorOrigin={{ vertical: "top", horizontal: "center" }}
+              open={showA}
+              autoHideDuration={6000}
+              onClose={toggleShowA}
+            >
+              <Alert
+                onClose={toggleShowA}
+                severity="success"
+                sx={{ width: "100%" }}
+              >
+                Product Added
+              </Alert>
+            </Snackbar>
+            <Snackbar
+              open={showError}
+              autoHideDuration={6000}
+              onClose={() => setShowError(false)}
+            >
+              <Alert
+                onClose={() => setShowError(false)}
+                severity="error"
+                sx={{ width: "100%" }}
+              >
+                Cannot Add Product
+              </Alert>
+            </Snackbar>
           </Form>
         </Col>
         <Col>
@@ -178,5 +195,7 @@ function AddProductForm() {
     </Container>
   );
 }
-
+const Alert = React.forwardRef(function Alert(props, ref) {
+  return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
+});
 export default AddProductForm;
