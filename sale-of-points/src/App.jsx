@@ -10,6 +10,7 @@ import Order from "./components/order/order.component";
 import { useEffect, useState } from "react";
 import ProductCategories from "./components/category/category";
 import ConfirmOrder from "./components/order/ConfirmOrder";
+import CustomerDetail from "./components/customer/CustomerDetail";
 
 
 function App() {
@@ -35,6 +36,7 @@ function App() {
           <Route path="/orders" element={<Order/>} />
           <Route path="/categories" element={<ProductCategories/>}/>
           <Route path="/checkout" element={<ConfirmOrder/>}/>
+          <Route path="/customers/:customerId" element={<CustomerDetail/>}/>
           {/* <Route path="/example" element={<DataTable />} /> */}
           {/* Other routes */}
         </Routes>

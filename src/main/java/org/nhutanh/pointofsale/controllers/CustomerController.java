@@ -1,9 +1,14 @@
 package org.nhutanh.pointofsale.controllers;
 
+import org.nhutanh.pointofsale.dto.CustomerDTO;
 import org.nhutanh.pointofsale.models.Customer;
+import org.nhutanh.pointofsale.models.Order;
 import org.nhutanh.pointofsale.repository.CustomerRepository;
+import org.nhutanh.pointofsale.repository.OrderRepository;
+import org.nhutanh.pointofsale.repository.TransactionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Optional;
@@ -15,6 +20,10 @@ public class CustomerController {
 
     @Autowired
     private CustomerRepository customerRepository;
+    @Autowired
+    private OrderRepository orderRepository;
+    @Autowired
+    private TransactionRepository transactionRepository;
 
     @GetMapping("")
     public List<Customer> getAllCustomers() {
@@ -22,10 +31,15 @@ public class CustomerController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Customer> getCustomerById(@PathVariable Long id) {
-        Optional<Customer> customer = customerRepository.findById(id);
-        return customer.map(ResponseEntity::ok)
-                .orElseGet(() -> ResponseEntity.notFound().build());
+    public ResponseEntity<?> getCustomerById(@PathVariable Long id) {
+        Customer customer = customerRepository.findById(id).orElse(null);
+
+        if (customer==null){
+            return  ResponseEntity.notFound().build();
+        }
+        CustomerDTO customerDTO = new CustomerDTO(customer,transactionRepository.findTransactionsWithOrdersByCustomerId(customer.getId()));
+
+        return ResponseEntity.ok(customerDTO);
     }
 
     @PostMapping("")
@@ -48,7 +62,7 @@ public class CustomerController {
     }
 
     @GetMapping("/find")
-    public ResponseEntity<List<Customer>> getCustomerByPhoneNumber(@RequestParam("phoneNumber") String phoneNumber) {
+    public ResponseEntity<List<Customer>> getCustomersByPhoneNumber(@RequestParam("phoneNumber") String phoneNumber) {
         List<Customer> customers = customerRepository.findCustomersByPhoneNumberContains(phoneNumber);
         return ResponseEntity.ok(customers);
     }

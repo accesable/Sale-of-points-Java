@@ -12,7 +12,7 @@ import {
 } from "mdb-react-ui-kit";
 import React, { useState } from "react";
 import { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import Autocomplete from "@mui/material/Autocomplete";
 import TextField from "@mui/material/TextField";
 import api from "../../http-common";
@@ -20,6 +20,7 @@ import debounce from "lodash.debounce";
 import ClearIcon from "@mui/icons-material/Clear";
 import { Clear, Info } from "@mui/icons-material";
 import { Button } from "react-bootstrap";
+import { Toast } from "react-bootstrap";
 
 export default function ConfirmOrder() {
   const navigate = useNavigate();
@@ -34,8 +35,7 @@ export default function ConfirmOrder() {
   const [customerPhoneNumber, setCustomerPhoneNumber] = useState("");
   const [selectedPayMethod, setSelectedPayMethod] = useState("");
   const [customerGive, setCustomerGive] = useState("");
-
-
+  const [showSuccess, setShowSuccess] = useState(false);
 
   const handleSubmitConfirmOrder = async (e) => {
     // Prepare the order detail list
@@ -45,9 +45,9 @@ export default function ConfirmOrder() {
     }));
     // Prepare the customer object
     const customer = {
-      phoneNumber: customerPhoneNumber ,
-      name: customerFullName ,
-      address: customerAddress ,
+      phoneNumber: customerPhoneNumber,
+      name: customerFullName,
+      address: customerAddress,
     };
     // Prepare the transaction object
     const transaction = {
@@ -66,12 +66,14 @@ export default function ConfirmOrder() {
     try {
       const response = await api.post("/orders/batch", orderData);
       console.log(response.data);
+      toggleShowSuccess();
       // Handle successful response (e.g., navigate to a success page or display a success message)
     } catch (error) {
       console.error("Error submitting order", error);
       // Handle errors (e.g., display an error message)
     }
   };
+  const toggleShowSuccess = () => setShowSuccess(!showSuccess);
 
   const payMethods = ["Cash", "Credit Card", "VnPay"];
 
@@ -235,16 +237,22 @@ export default function ConfirmOrder() {
                             <div class="note note-primary mb-3 " bg="primary">
                               <Clear onClick={handleClearCustomerInformation} />
                               <ul className="list-unstyled">
-                                <li key={selectedCustomer.name} className="mb-1">
+                                <li
+                                  key={selectedCustomer.name}
+                                  className="mb-1"
+                                >
                                   <strong>Cust Name : </strong>{" "}
                                   <u>{selectedCustomer.name}</u>
                                 </li>
-                                <li key={selectedCustomer.address} className="mb-1">
+                                <li
+                                  key={selectedCustomer.address}
+                                  className="mb-1"
+                                >
                                   <strong>Cust Address : </strong>{" "}
                                   <u>{selectedCustomer.address}</u>
                                 </li>
                                 <li key={selectedCustomer.id} className="mb-1">
-                                  <a href="#?">
+                                  <a href={`/customers/${selectedCustomer.id}`}>
                                     <Info /> Check Customer Info
                                   </a>
                                 </li>
@@ -279,7 +287,8 @@ export default function ConfirmOrder() {
                             className="mb-3"
                             options={payMethods}
                             getOptionDisabled={(option) =>
-                              option === payMethods[1] || option === payMethods[2]
+                              option === payMethods[1] ||
+                              option === payMethods[2]
                             }
                             onChange={(event, newValue) => {
                               setSelectedPayMethod(newValue);
@@ -341,6 +350,19 @@ export default function ConfirmOrder() {
                             </span>
                           </div>
                         </MDBBtn>
+                        <Toast show={showSuccess} onClose={toggleShowSuccess}>
+                          <Toast.Header>
+                            <img
+                              src="holder.js/20x20?text=%20"
+                              className="rounded me-2"
+                              alt=""
+                            />
+                            <strong className="me-auto">Nofitication</strong>
+                          </Toast.Header>
+                          <Toast.Body>
+                            Order Confirmed
+                          </Toast.Body>
+                        </Toast>
                       </MDBCardBody>
                     </MDBCard>
                   </MDBCol>

@@ -1,11 +1,13 @@
 package org.nhutanh.pointofsale.controllers;
 
+import org.nhutanh.pointofsale.dto.OrderDetailDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.nhutanh.pointofsale.models.OrderDetail;
 import org.nhutanh.pointofsale.repository.OrderDetailRepository;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -32,6 +34,18 @@ public class OrderDetailController {
     @PostMapping("")
     public ResponseEntity<OrderDetail> createOrderDetail(@RequestBody OrderDetail orderDetail) {
         return ResponseEntity.ok(orderDetailRepository.save(orderDetail));
+    }
+    @GetMapping("/find")
+    public ResponseEntity<?> getOrderDetailsOnOrderId(@RequestParam("orderId") Long orderId){
+        List<OrderDetail> orderDetailList = orderDetailRepository.findOrderDetailsOnOrderId(orderId);
+
+        List<OrderDetailDTO> orderDetailDTOList = new ArrayList<>();
+
+        orderDetailList.forEach(orderDetail -> {
+            orderDetailDTOList.add(new OrderDetailDTO(orderDetail.getId(),orderDetail.getProduct(),
+                    orderDetail.getQuantity(),orderDetail.getPrice()));
+        });
+        return ResponseEntity.ok(orderDetailDTOList);
     }
 
     @PutMapping("/{id}")
