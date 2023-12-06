@@ -34,3 +34,4 @@ build/
 
 # React
 /sale-of-points/node_modules
+/src/dynamic/**
