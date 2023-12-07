@@ -18,6 +18,8 @@ public class SignupRequest {
   @Email
   private String email;
 
+  private String fullName;
+
   private Set<String> role;
 
   private String password;

@@ -1,7 +1,6 @@
 import api from "../../http-common";
 import { useParams } from "react-router-dom";
 import React, { useState, useEffect } from "react";
-import PropTypes from "prop-types";
 import Box from "@mui/material/Box";
 import Collapse from "@mui/material/Collapse";
 import IconButton from "@mui/material/IconButton";
@@ -67,7 +66,7 @@ function Row(props) {
           <Collapse in={open} timeout="auto" unmountOnExit>
             <Box sx={{ margin: 1 }}>
               <Typography variant="h6" gutterBottom component="div">
-                History
+                Order Details
               </Typography>
               <Table size="small" aria-label="purchases">
                 <TableHead>

@@ -22,6 +22,7 @@ function NavBar({ onLogout }) {
             <Nav.Link as={Link} to="/products">Products </Nav.Link>
             <Nav.Link as={Link} to="/categories">Categories</Nav.Link>
             <Nav.Link as={Link} to="/orders">Orders</Nav.Link>
+            <Nav.Link as={Link} to="/users">Users</Nav.Link>
             <NavDropdown title="Dropdown" id="basic-nav-dropdown">
               <NavDropdown.Item href="#action/3.1">Action</NavDropdown.Item>
               <NavDropdown.Item href="#action/3.2">
@@ -35,8 +36,8 @@ function NavBar({ onLogout }) {
             </NavDropdown>
           </Nav>
           <Nav>
+          <Nav.Link as={Link} to={`/users/${localStorage.getItem('userId')}`}>Hello {localStorage.getItem('username')}</Nav.Link>
             <Nav.Link as={Link} to="/" onClick={handleLogoutClick}>Logout</Nav.Link>
-            
           </Nav>
         </Navbar.Collapse>
       </Container>

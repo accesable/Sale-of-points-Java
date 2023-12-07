@@ -100,6 +100,7 @@ public class ProductController {
             dto.setQrCodePath(product.getQrCodePath());
             dto.setCategoryName(product.getCategory().getCategoryName());
             dto.setCategoryId(product.getCategory().getId());
+            dto.setCreationDate(product.getCreationDate());
             // Set importedPrice only for admin users
             if (isAdmin) {
                 dto.setImportedPrice(product.getImportedPrice());
@@ -129,4 +130,53 @@ public class ProductController {
             return ResponseEntity.internalServerError().body("Error deleting product");
         }
     }
+    @PutMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> updateProduct(@PathVariable String id,
+                                           @RequestParam(required = false) String name,
+                                           @RequestParam(required = false) Double importedPrice,
+                                           @RequestParam(required = false) Double retailPrice,
+                                           @RequestParam(required = false) String categoryId,
+                                           @RequestParam(required = false) MultipartFile imageFile) {
+        try {
+            Product product = productRepository.findById(id).orElse(null);
+            if (product == null) {
+                return ResponseEntity.notFound().build();
+            }
+
+            if (name != null && !name.isEmpty()) {
+                product.setName(name);
+            }
+
+            if (importedPrice != null) {
+                product.setImportedPrice(importedPrice);
+            }
+
+            if (retailPrice != null) {
+                product.setRetailPrice(retailPrice);
+            }
+
+            if (categoryId != null && !categoryId.isEmpty()) {
+                Category category = categoryRepository.findById(categoryId).orElseThrow(() -> new Exception("Category not found"));
+                product.setCategory(category);
+            }
+
+            if (imageFile != null && !imageFile.isEmpty()) {
+                // Delete the old image
+                FileUtilsService.deleteImage(id,product.getImagePath());
+                // Save the new image and update the path
+                String imagePath = FileUtilsService.saveImage(imageFile, product.getId());
+                product.setImagePath(imagePath);
+            }
+
+            productRepository.save(product);
+
+            return ResponseEntity.ok(product);
+        } catch (IOException e) {
+            return ResponseEntity.internalServerError().body("Error updating product image");
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body("Error updating product");
+        }
+    }
+
 }

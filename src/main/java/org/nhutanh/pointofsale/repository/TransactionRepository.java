@@ -18,4 +18,8 @@ public interface TransactionRepository extends JpaRepository<Transaction,Long> {
     @Transactional
     @Query("SELECT t FROM Transaction t JOIN FETCH t.order o WHERE o.customer.id = :customerId")
     List<Transaction> findTransactionsWithOrdersByCustomerId(@Param("customerId") Long customerId);
+
+    @Transactional
+    @Query("SELECT t FROM Transaction t JOIN FETCH t.order o WHERE o.user.id = :userId")
+    List<Transaction> findTransactionsWithOrdersByUserId(@Param("userId") Long userId);
 }

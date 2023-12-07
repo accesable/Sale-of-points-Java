@@ -29,5 +29,9 @@ public class Order {
 
     @OneToOne(mappedBy = "order", cascade = CascadeType.ALL)
     private Transaction transaction;
+
+    @ManyToOne
+    @JoinColumn(name = "user_id")
+    private User user;
     // Constructors, getters, and setters
 }

@@ -1,8 +1,11 @@
 package org.nhutanh.pointofsale.models;
 
+import java.util.Date;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -32,6 +35,8 @@ public class User {
   @Email
   private String email;
 
+  private String fullName;
+
   @NotBlank
   @Size(max = 120)
   private String password;
@@ -41,11 +46,17 @@ public class User {
   @Column(name = "enabled", columnDefinition = "BIT(1)")
   private Boolean enabled = false;
 
+  private Date lastLogin;
+  private String profilePicturePath;
+
   @ManyToMany(fetch = FetchType.LAZY)
   @JoinTable(  name = "user_roles", 
         joinColumns = @JoinColumn(name = "user_id"), 
         inverseJoinColumns = @JoinColumn(name = "role_id"))
   private Set<Role> roles = new HashSet<>();
+  @JsonIgnore
+  @OneToMany(mappedBy = "user")
+  private List<Order> orders;
 
   public User() {
   }

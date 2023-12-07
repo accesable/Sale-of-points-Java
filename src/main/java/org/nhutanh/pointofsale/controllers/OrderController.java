@@ -1,8 +1,10 @@
 package org.nhutanh.pointofsale.controllers;
 
 import org.nhutanh.pointofsale.models.*;
+import org.nhutanh.pointofsale.models.controllermodels.JsonResponseMessage;
 import org.nhutanh.pointofsale.models.controllermodels.ProcessOrderRequest;
 import org.nhutanh.pointofsale.models.controllermodels.UpdateOrderRequest;
+import org.nhutanh.pointofsale.payload.response.JwtResponse;
 import org.nhutanh.pointofsale.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -10,10 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import javax.swing.text.html.parser.Entity;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @RestController
@@ -73,6 +72,8 @@ public class OrderController {
                 })
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
+    @Autowired
+    private UserRepository userRepository;
     @PostMapping("/batch")
     @Transactional
     public ResponseEntity<?> processOrder(@RequestBody ProcessOrderRequest processOrderRequest) {
@@ -89,7 +90,9 @@ public class OrderController {
             if(requestCustomer.getName()==null || requestCustomer.getName().isEmpty() || requestCustomer.getName().isBlank()
                     || requestCustomer.getAddress()==null || requestCustomer.getAddress().isBlank() || requestCustomer.getAddress().isEmpty()
             ){
-                return ResponseEntity.badRequest().body("Customer not existing Please Provide Customer Information for Register");
+               JsonResponseMessage responseMessage = JsonResponseMessage.builder().Msg("Customer Not Found Please Provide Customer information for register ")
+                        .code("0").build();
+                return ResponseEntity.status(400).body(responseMessage);
             }
             customerRepository.save(requestCustomer);
         }
@@ -100,7 +103,9 @@ public class OrderController {
 
 //        Create a List Of Order details based on OrderDetailRequest
         if (processOrderRequest.getOrderDetailList()==null){
-            return ResponseEntity.badRequest().build();
+            JsonResponseMessage responseMessage = JsonResponseMessage.builder().Msg("Order List Is Empty")
+                    .code("0").build();
+            return ResponseEntity.status(400).body(responseMessage);
         }
 
         processOrderRequest.getOrderDetailList().forEach(orderDetail -> {
@@ -121,10 +126,14 @@ public class OrderController {
         requestTransaction.setOrder(requestOrder);
 
         requestOrder.setTransaction(requestTransaction);
+        User user =userRepository.findById(processOrderRequest.getUserId()).orElse(null);
+        if (user==null)    return ResponseEntity.ok(JsonResponseMessage.builder().Msg("No User Founded").code("0").build());
+        requestOrder.setUser(user);
 //          Save On cascade all order information on relationship
         orderRepository.save(requestOrder);
 
-        return ResponseEntity.ok("Order Confirmed");
+        return ResponseEntity.ok(JsonResponseMessage.builder().Msg("Order Is Confirmed")
+                .code("1").build());
 
     }
 }

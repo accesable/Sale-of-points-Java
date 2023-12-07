@@ -7,13 +7,8 @@ Using JWT for authentication and authorization
 - Customer management features is done
 - Accounts management features 
   - Not Done
-    - Force creating a new
-      password on first login
-    - For new employees: can
-      only access system
-      functions after creating a
-      new password
-- User Management features Not Done
-  - Add User Profile Picture
-- Transaction Processing Not Done
+  - Login via link in email
+  - Make an add user interface for admin
+- User Management features All Done
+- Transaction Processing Not Done Modify Later
 - REPORTING AND ANALYTICS Not Done

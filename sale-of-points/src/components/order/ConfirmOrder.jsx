@@ -58,11 +58,13 @@ export default function ConfirmOrder() {
       customerReceive: (customerGive - totalPrice).toFixed(2),
       status: selectedPayMethod === "Cash" ? "Success" : "Pending",
     };
+    const userId = localStorage.getItem("userId");
     // Prepare the complete order object
     const orderData = {
       orderDetailList,
       customer,
       transaction,
+      userId
     };
     // API Request
     try {
@@ -71,7 +73,12 @@ export default function ConfirmOrder() {
       toggleShowSuccess();
       // Handle successful response (e.g., navigate to a success page or display a success message)
     } catch (error) {
-      console.error("Error submitting order", error);
+      if (error.response && error.response.data) {
+        // Accessing the response body sent by the server
+        console.error("Error response body:", error.response.data);
+    } else {
+        console.error("Error with no response body");
+    }
       toggleShowError()
       // Handle errors (e.g., display an error message)
     }

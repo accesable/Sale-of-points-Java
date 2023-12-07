@@ -1,5 +1,6 @@
 package org.nhutanh.pointofsale.payload.response;
 
+import java.util.Date;
 import java.util.List;
 
 public class JwtResponse {
@@ -9,13 +10,23 @@ public class JwtResponse {
   private String username;
   private String email;
   private List<String> roles;
+  private Date lastLogin;
 
-  public JwtResponse(String accessToken, Long id, String username, String email, List<String> roles) {
+  public JwtResponse(String accessToken, Long id, String username, String email, Date lastLogin, List<String> roles) {
     this.token = accessToken;
     this.id = id;
     this.username = username;
     this.email = email;
+    this.lastLogin = lastLogin;
     this.roles = roles;
+  }
+
+  public Date getLastLogin() {
+    return lastLogin;
+  }
+
+  public void setLastLogin(Date lastLogin) {
+    this.lastLogin = lastLogin;
   }
 
   public String getAccessToken() {

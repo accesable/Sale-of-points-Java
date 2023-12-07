@@ -1,11 +1,13 @@
 package org.nhutanh.pointofsale.security.userservices;
 
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
 import jakarta.persistence.Column;
+import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 import org.nhutanh.pointofsale.models.User;
@@ -34,9 +36,11 @@ public class UserDetailsImpl implements UserDetails {
 
   private Boolean enabled = false;
 
+  private Date lastLogin;
+
   private Collection<? extends GrantedAuthority> authorities;
 
-  public UserDetailsImpl(Long id, String username, String email, String password,boolean locked, boolean enabled,
+  public UserDetailsImpl(Long id, String username, String email, String password,boolean locked, boolean enabled,Date lastLogin,
       Collection<? extends GrantedAuthority> authorities) {
     this.id = id;
     this.username = username;
@@ -44,6 +48,7 @@ public class UserDetailsImpl implements UserDetails {
     this.password = password;
     this.locked = locked;
     this.enabled =enabled;
+    this.lastLogin = lastLogin;
     this.authorities = authorities;
   }
 
@@ -59,6 +64,7 @@ public class UserDetailsImpl implements UserDetails {
         user.getPassword(),
         user.getLocked(),
             user.getEnabled(),
+        user.getLastLogin(),
         authorities);
   }
 

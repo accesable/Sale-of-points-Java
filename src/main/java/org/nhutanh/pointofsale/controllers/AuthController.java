@@ -1,18 +1,20 @@
 package org.nhutanh.pointofsale.controllers;
 
 import java.time.LocalDateTime;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import jakarta.validation.Valid;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.nhutanh.pointofsale.models.ERole;
 import org.nhutanh.pointofsale.models.Role;
 import org.nhutanh.pointofsale.models.User;
+import org.nhutanh.pointofsale.models.controllermodels.ChangePasswordRequest;
+import org.nhutanh.pointofsale.models.controllermodels.JsonResponseMessage;
 import org.nhutanh.pointofsale.payload.request.LoginRequest;
 import org.nhutanh.pointofsale.payload.request.SignupRequest;
 import org.nhutanh.pointofsale.payload.response.JwtResponse;
@@ -27,7 +29,10 @@ import org.nhutanh.pointofsale.services.email.EmailValidator;
 import org.nhutanh.pointofsale.services.email.EmailSender;
 import org.nhutanh.pointofsale.token.ConfirmationToken;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -70,25 +75,64 @@ public class AuthController {
   @PostMapping("/signin")
   public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
 
-    Authentication authentication = authenticationManager.authenticate(
-        new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword()));
+    try {
+      Authentication authentication = authenticationManager.authenticate(
+              new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword()));
+      SecurityContextHolder.getContext().setAuthentication(authentication);
+      String jwt = jwtUtils.generateJwtToken(authentication);
 
-    SecurityContextHolder.getContext().setAuthentication(authentication);
-    String jwt = jwtUtils.generateJwtToken(authentication);
-    
-    UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
-    List<String> roles = userDetails.getAuthorities().stream()
-        .map(GrantedAuthority::getAuthority)
-        .collect(Collectors.toList());
+      UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+      if (userDetails.getLastLogin() == null) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(JsonResponseMessage.builder()
+                .Msg("This Account is required to change password").code("2").build());
+      }
+      List<String> roles = userDetails.getAuthorities().stream()
+              .map(GrantedAuthority::getAuthority)
+              .collect(Collectors.toList());
 
-    return ResponseEntity.ok(new JwtResponse(jwt,
-                         userDetails.getId(),
-                         userDetails.getUsername(), 
-                         userDetails.getEmail(), 
-                         roles));
+      int i = userRepository.updateLogin(userDetails.getId(), new Date());
+
+      return ResponseEntity.ok(new JwtResponse(jwt,
+              userDetails.getId(),
+              userDetails.getUsername(),
+              userDetails.getEmail(),
+              userDetails.getLastLogin(),
+              roles));
+    } catch (Exception e) {
+      return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(JsonResponseMessage.builder()
+              .Msg("Invalid Credentials").code("0").build());
+    }
   }
+
+  @PostMapping("/changePasswordOnFirstLogin")
+  public ResponseEntity<?> changePassword(@Valid @RequestBody ChangePasswordRequest changePasswordRequest) {
+    try {
+      Authentication authentication = authenticationManager.authenticate(
+              new UsernamePasswordAuthenticationToken(changePasswordRequest.getUsername(), changePasswordRequest.getOldPassword()));
+      SecurityContextHolder.getContext().setAuthentication(authentication);
+      User inDataBaseUser = userRepository.findByUsername(changePasswordRequest.getUsername()).orElse(null);
+      if (inDataBaseUser == null) {
+        return ResponseEntity.status(404).body(JsonResponseMessage.builder()
+                .code("0").Msg("No User Found").build());
+      }
+      if (inDataBaseUser.getLastLogin() != null) {
+        return ResponseEntity.status(401).body(JsonResponseMessage.builder()
+                .code("0").Msg("The change password account request for this account is invalid").build());
+      }
+      inDataBaseUser.setPassword(encoder.encode(changePasswordRequest.getUpdatedPassword()));
+      inDataBaseUser.setLastLogin(new Date());
+      userRepository.save(inDataBaseUser);
+      return ResponseEntity.status(200).body(JsonResponseMessage.builder()
+              .code("1").Msg("Password Updated Successfully").build());
+    } catch (Exception e) {
+      return ResponseEntity.status(401).body(JsonResponseMessage.builder()
+              .code("0").Msg("Invalid Credential").build());
+    }
+  }
+
+
   @GetMapping("/confirm")
-  public String confirm(@RequestParam("token") String token) {
+  public ResponseEntity<?> confirm(@RequestParam("token") String token) {
     ConfirmationToken confirmationToken = confirmationTokenService
             .getToken(token)
             .orElseThrow(() ->
@@ -105,8 +149,9 @@ public class AuthController {
     }
 
     confirmationTokenService.setConfirmedAt(token);
-    userRepository.enableUser(confirmationToken.getUser().getEmail());
-    return "Token confirmed Now you can use this account for logging";
+    int i = userRepository.enableUser(confirmationToken.getUser().getEmail());
+    return ResponseEntity.status(200).body(JsonResponseMessage.builder()
+            .code("1").Msg("User Enabled"));
   }
 
 
@@ -136,6 +181,7 @@ public class AuthController {
     User user = new User(signUpRequest.getUsername(),
                signUpRequest.getEmail(),
                encoder.encode(signUpRequest.getPassword()));
+    user.setFullName(signUpRequest.getFullName());
 
     Set<String> strRoles = signUpRequest.getRole();
     Set<Role> roles = new HashSet<>();
@@ -187,6 +233,34 @@ public class AuthController {
             buildEmail(signUpRequest.getUsername(), link));
     return ResponseEntity.ok(new MessageResponse("User registered successfully! Please request the user to confirm via email"));
   }
+  @Getter
+  @Setter
+  @NoArgsConstructor
+  @AllArgsConstructor
+  public static class EmailDTO{
+    private String email;
+  }
+  @PostMapping("/resendToken")
+  @PreAuthorize("hasRole('ADMIN')")
+  public ResponseEntity<?> resendToken(@RequestBody EmailDTO email){
+    User user = userRepository.findByEmail(email.getEmail()).orElse(null);
+    if (user==null) return ResponseEntity.status(404).body(JsonResponseMessage.builder().code("0").Msg("User Not Founded").build());
+    String token = UUID.randomUUID().toString();
+    ConfirmationToken confirmationToken = new ConfirmationToken(
+            token,
+            LocalDateTime.now(),
+            LocalDateTime.now().plusMinutes(1),
+            user
+    );
+    confirmationTokenService.saveConfirmationToken(confirmationToken);
+
+    String link = "http://localhost:8085/api/auth/confirm?token=" + token;
+    emailSender.send(
+            user.getEmail(),
+            buildEmail(user.getUsername(), link));
+    return ResponseEntity.ok(new MessageResponse("Token Resended"));
+  }
+
 
   private String buildEmail(String name, String link) {
     return "<div style=\"font-family:Helvetica,Arial,sans-serif;font-size:16px;margin:0;color:#0b0c0c\">\n" +
@@ -244,7 +318,7 @@ public class AuthController {
             "      <td width=\"10\" valign=\"middle\"><br></td>\n" +
             "      <td style=\"font-family:Helvetica,Arial,sans-serif;font-size:19px;line-height:1.315789474;max-width:560px\">\n" +
             "        \n" +
-            "            <p style=\"Margin:0 0 20px 0;font-size:19px;line-height:25px;color:#0b0c0c\">Hi " + name + ",</p><p style=\"Margin:0 0 20px 0;font-size:19px;line-height:25px;color:#0b0c0c\"> Thank you for registering. Please click on the below link to activate your account: </p><blockquote style=\"Margin:0 0 20px 0;border-left:10px solid #b1b4b6;padding:15px 0 0.1px 15px;font-size:19px;line-height:25px\"><p style=\"Margin:0 0 20px 0;font-size:19px;line-height:25px;color:#0b0c0c\"> <a href=\"" + link + "\">Activate Now</a> </p></blockquote>\n Link will expire in 15 minutes. <p>See you soon</p>" +
+            "            <p style=\"Margin:0 0 20px 0;font-size:19px;line-height:25px;color:#0b0c0c\">Hi " + name + ",</p><p style=\"Margin:0 0 20px 0;font-size:19px;line-height:25px;color:#0b0c0c\"> Thank you for registering. Please click on the below link to activate your account: </p><blockquote style=\"Margin:0 0 20px 0;border-left:10px solid #b1b4b6;padding:15px 0 0.1px 15px;font-size:19px;line-height:25px\"><p style=\"Margin:0 0 20px 0;font-size:19px;line-height:25px;color:#0b0c0c\"> <a href=\"" + link + "\">Activate Now</a> </p></blockquote>\n Link will expire in 1 minutes. <p>See you soon</p>" +
             "        \n" +
             "      </td>\n" +
             "      <td width=\"10\" valign=\"middle\"><br></td>\n" +
