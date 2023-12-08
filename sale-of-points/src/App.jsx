@@ -15,21 +15,22 @@ import UserDetail from "./components/user/UserDetail";
 import UserProfile from "./components/user/UserProfile";
 
 
+
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(localStorage.getItem('token') ? true : false);
 
-  const {token} = useParams();
+
 
   const handleLogin = (loginStatus) => {
     setIsAuthenticated(loginStatus);
   };
 
-  const navigate = useNavigate();
 
   const handleLogout = () => {
     localStorage.clear();
     setIsAuthenticated(false);
   };
+  
   return (
     <>
     {isAuthenticated ? (
@@ -50,7 +51,8 @@ function App() {
         </Routes>
       </>
     ):(
-      <LoginPage onLogin={handleLogin} />
+      <LoginPage onLogin={handleLogin}/>
+
     )}
 </>
   );

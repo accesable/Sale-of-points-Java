@@ -44,7 +44,7 @@ function Row(props) {
         <TableCell align="right">{row.username}</TableCell>
         <TableCell align="right">{row.email}</TableCell>
         <TableCell align="right">{row.fullName}</TableCell>
-        <TableCell align="middle">
+        <TableCell >
           {row.locked ? `Locked` : `Not Locked`}
         </TableCell>
         <TableCell align="right">

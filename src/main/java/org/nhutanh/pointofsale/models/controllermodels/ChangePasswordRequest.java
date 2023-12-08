@@ -13,4 +13,5 @@ public class ChangePasswordRequest {
     private String updatedPassword;
     private String username;
     private String oldPassword;
+    private String token;
 }

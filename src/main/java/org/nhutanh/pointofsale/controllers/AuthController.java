@@ -4,12 +4,14 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.jetbrains.annotations.NotNull;
 import org.nhutanh.pointofsale.models.ERole;
 import org.nhutanh.pointofsale.models.Role;
 import org.nhutanh.pointofsale.models.User;
@@ -40,6 +42,8 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
 
 @CrossOrigin(origins = "*", maxAge = 3600)
@@ -86,18 +90,7 @@ public class AuthController {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(JsonResponseMessage.builder()
                 .Msg("This Account is required to change password").code("2").build());
       }
-      List<String> roles = userDetails.getAuthorities().stream()
-              .map(GrantedAuthority::getAuthority)
-              .collect(Collectors.toList());
-
-      int i = userRepository.updateLogin(userDetails.getId(), new Date());
-
-      return ResponseEntity.ok(new JwtResponse(jwt,
-              userDetails.getId(),
-              userDetails.getUsername(),
-              userDetails.getEmail(),
-              userDetails.getLastLogin(),
-              roles));
+      return getUserCredentials(userDetails, jwt);
     } catch (Exception e) {
       return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(JsonResponseMessage.builder()
               .Msg("Invalid Credentials").code("0").build());
@@ -105,16 +98,33 @@ public class AuthController {
   }
 
   @PostMapping("/changePasswordOnFirstLogin")
-  public ResponseEntity<?> changePassword(@Valid @RequestBody ChangePasswordRequest changePasswordRequest) {
+  public ResponseEntity<?> changePassword( @RequestBody ChangePasswordRequest changePasswordRequest) {
     try {
-      Authentication authentication = authenticationManager.authenticate(
-              new UsernamePasswordAuthenticationToken(changePasswordRequest.getUsername(), changePasswordRequest.getOldPassword()));
-      SecurityContextHolder.getContext().setAuthentication(authentication);
-      User inDataBaseUser = userRepository.findByUsername(changePasswordRequest.getUsername()).orElse(null);
-      if (inDataBaseUser == null) {
-        return ResponseEntity.status(404).body(JsonResponseMessage.builder()
-                .code("0").Msg("No User Found").build());
+      String token = changePasswordRequest.getToken();
+      Authentication authentication;
+      User inDataBaseUser;
+
+      if (token!= null || !token.isEmpty() || !token.isBlank() ){
+        inDataBaseUser = confirmationTokenService.getUserFromToken(token);
+        if (inDataBaseUser == null) {
+          return ResponseEntity.status(404).body(JsonResponseMessage.builder()
+                  .code("0").Msg("No User Found").build());
+        }
+         authentication = authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(inDataBaseUser.getUsername(), inDataBaseUser.getUsername()));
+      }else {
+        inDataBaseUser = userRepository.findByUsername(changePasswordRequest.getUsername()).orElse(null);
+        if (inDataBaseUser == null) {
+          return ResponseEntity.status(404).body(JsonResponseMessage.builder()
+                  .code("0").Msg("No User Found").build());
+        }
+        authentication = authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(changePasswordRequest.getUsername(), changePasswordRequest.getOldPassword()));
       }
+
+      SecurityContextHolder.getContext().setAuthentication(authentication);
+
+
       if (inDataBaseUser.getLastLogin() != null) {
         return ResponseEntity.status(401).body(JsonResponseMessage.builder()
                 .code("0").Msg("The change password account request for this account is invalid").build());
@@ -122,36 +132,66 @@ public class AuthController {
       inDataBaseUser.setPassword(encoder.encode(changePasswordRequest.getUpdatedPassword()));
       inDataBaseUser.setLastLogin(new Date());
       userRepository.save(inDataBaseUser);
-      return ResponseEntity.status(200).body(JsonResponseMessage.builder()
-              .code("1").Msg("Password Updated Successfully").build());
+      UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+      String jwt = jwtUtils.generateJwtToken(authentication);
+      return getUserCredentials(userDetails, jwt);
     } catch (Exception e) {
       return ResponseEntity.status(401).body(JsonResponseMessage.builder()
               .code("0").Msg("Invalid Credential").build());
     }
   }
 
+  @NotNull
+  private ResponseEntity<?> getUserCredentials(UserDetailsImpl userDetails, String jwt) {
+    List<String> roles = userDetails.getAuthorities().stream()
+            .map(GrantedAuthority::getAuthority)
+            .collect(Collectors.toList());
 
-  @GetMapping("/confirm")
+    int i = userRepository.updateLogin(userDetails.getId(), new Date());
+
+    return ResponseEntity.ok(new JwtResponse(jwt,
+            userDetails.getId(),
+            userDetails.getUsername(),
+            userDetails.getEmail(),
+            userDetails.getLastLogin(),
+            roles));
+  }
+
+
+  @GetMapping(value = "/confirm",produces = {"application/json"})
   public ResponseEntity<?> confirm(@RequestParam("token") String token) {
+
     ConfirmationToken confirmationToken = confirmationTokenService
             .getToken(token)
-            .orElseThrow(() ->
-                    new IllegalStateException("token not found"));
+            .orElse(null);
+    if (confirmationToken==null){
+      return ResponseEntity.status(401).body(JsonResponseMessage.builder()
+              .code("0").Msg("Token Not Founded").build());
+    }
+
+    User user = confirmationTokenService.getUserFromToken(token);
+    if (user == null) return ResponseEntity.status(404).body(JsonResponseMessage.builder().code("0").Msg("User Not Founded").build());
+
+    if (user.getLastLogin()==null){
+      return ResponseEntity.status(200).body(JsonResponseMessage.builder()
+              .code("2").Msg("Token is Already Confirmed Please update password").build());
+    }
 
     if (confirmationToken.getConfirmedAt() != null) {
-      throw new IllegalStateException("Token already confirmed");
+      return ResponseEntity.status(401).body(JsonResponseMessage.builder()
+              .code("0").Msg("Token is Already Confirmed").build());
     }
 
     LocalDateTime expiredAt = confirmationToken.getExpiresAt();
 
     if (expiredAt.isBefore(LocalDateTime.now())) {
-      throw new IllegalStateException("token expired");
+      return ResponseEntity.status(401).body(JsonResponseMessage.builder()
+              .code("0").Msg("Token Expired").build());
     }
-
     confirmationTokenService.setConfirmedAt(token);
     int i = userRepository.enableUser(confirmationToken.getUser().getEmail());
     return ResponseEntity.status(200).body(JsonResponseMessage.builder()
-            .code("1").Msg("User Enabled"));
+            .code("1").Msg("User Enabled").build());
   }
 
 
@@ -226,8 +266,11 @@ public class AuthController {
             user
     );
     confirmationTokenService.saveConfirmationToken(confirmationToken);
+    HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest();
+    String baseUrl = request.getRequestURL().toString().replace(request.getRequestURI(), request.getContextPath());
 
-    String link = "http://localhost:8085/api/auth/confirm?token=" + token;
+//    String link = baseUrl+"/api/auth/confirm?token=" + token;
+    String link = "http://localhost:3001/auth/firstLogin?logintoken="+token;
     emailSender.send(
             signUpRequest.getEmail(),
             buildEmail(signUpRequest.getUsername(), link));
@@ -254,7 +297,11 @@ public class AuthController {
     );
     confirmationTokenService.saveConfirmationToken(confirmationToken);
 
-    String link = "http://localhost:8085/api/auth/confirm?token=" + token;
+    HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest();
+    String baseUrl = request.getRequestURL().toString().replace(request.getRequestURI(), request.getContextPath());
+
+//    String link = baseUrl+"/api/auth/confirm?token=" + token;
+    String link = "http://localhost:3001/auth/firstLogin?logintoken="+token;
     emailSender.send(
             user.getEmail(),
             buildEmail(user.getUsername(), link));
