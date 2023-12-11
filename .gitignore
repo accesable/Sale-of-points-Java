@@ -36,4 +36,4 @@ build/
 /sale-of-points/node_modules
 /src/dynamic/**
 /sale-of-points/build
-/src/main/resources/static/**
+/src/main/resources/static/static
