@@ -1,6 +1,8 @@
-import React from "react";
+import { React, useEffect } from "react";
 import Modal from "react-bootstrap/Modal";
 import { Button } from "react-bootstrap";
+import { TextField } from "@mui/material";
+
 import {
   MDBContainer,
   MDBRow,
@@ -19,21 +21,20 @@ const OrderDetailsModal = ({
   onHide,
   orderDetails,
   onDeleteAllOrderDetails,
+  onQuantityChange,
 }) => {
   const handleDeleteOrderDetails = () => {
     onDeleteAllOrderDetails(); // Call the parent's callback
   };
 
-  // Calculate the total price
-  let totalPrice = orderDetails.reduce(
-    (sum, item) => sum + item.retailPrice * item.quantity,
-    0
-  );
+  useEffect(()=>{
 
+  },[orderDetails])
   const navigate = useNavigate();
-  const handleConfirmOrder = () =>{
-    navigate("/checkout")
-  }
+  const handleConfirmOrder = () => {
+    navigate("/checkout");
+  };
+
 
   return (
     <Modal
@@ -88,7 +89,19 @@ const OrderDetailsModal = ({
                           className="text-center d-flex justify-content-center align-items-center"
                         >
                           <p className="text-muted mb-0 small">
-                            Qty: {item.quantity}
+                            <TextField
+                              id="outlined-number"
+                              type="number"
+                              defaultValue={item.quantity}
+                              InputLabelProps={{
+                                shrink: true,
+                                max:99,
+                                min:1,
+                              }}
+                              onChange={(e) => onQuantityChange(item.id, parseInt(e.target.value))}
+                          
+                            />
+                            Quantity
                           </p>
                         </MDBCol>
                         <MDBCol
@@ -123,16 +136,10 @@ const OrderDetailsModal = ({
                   tag="h5"
                   className="d-flex align-items-center justify-content-end text-black text-uppercase mb-0"
                 >
-                  Total paid:{" "}
-                  <span className="h2 mb-0 ms-2">${totalPrice.toFixed(2)}</span>
+                  <Button variant="primary mt-3" onClick={handleConfirmOrder}>
+                    Go To Checkout
+                  </Button>
                 </MDBTypography>
-                <MDBTypography
-                  tag="h5"
-                  className="d-flex align-items-center justify-content-end text-black text-uppercase mb-0"
-                >
-                  <Button variant="primary mt-3" onClick={handleConfirmOrder}>Go To Checkout</Button>
-                </MDBTypography>
-                
               </MDBCardFooter>
             </MDBCard>
           </MDBCol>

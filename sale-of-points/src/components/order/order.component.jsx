@@ -14,6 +14,7 @@ import Button from "react-bootstrap/Button";
 import OrderDetailsModal from "./OrderDetailsModal";
 import { Unstable_NumberInput as BaseNumberInput } from "@mui/base/Unstable_NumberInput";
 import { styled } from "@mui/system";
+import { Badge } from "@mui/material";
 import RemoveIcon from "@mui/icons-material/Remove";
 import AddIcon from "@mui/icons-material/Add";
 
@@ -71,7 +72,7 @@ export default function ImgMediaCard() {
     });
 
     setMergedOrderDetails(orderDetailsWithProductInfo);
-    setCurrentOrder(orderDetailsWithProductInfo)
+    setCurrentOrder(orderDetailsWithProductInfo);
     setLgShow(true);
   };
 
@@ -115,6 +116,31 @@ export default function ImgMediaCard() {
       ...prevQuantities,
       [productId]: newQuantity,
     }));
+  };
+
+  const handleOrderModalQuantityChange = (productId, newQuantity) => {
+    if (newQuantity <= 0) {
+      // Remove the item from the order if newQuantity = 0
+      setCurrentOrder((prevOrder) =>
+        prevOrder.filter((item) => item.id !== productId)
+      );
+      const orderDetailsWithProductInfo = currentOrder.map((orderItem) => {
+        const product = products.find((p) => p.id === orderItem.id);
+        return {
+          ...orderItem,
+          name: product?.name,
+          imagePath: product?.imagePath,
+          retailPrice: product?.retailPrice,
+        };
+      });
+      setMergedOrderDetails(orderDetailsWithProductInfo);
+    } else {
+      setCurrentOrder((prevOrder) =>
+        prevOrder.map((item) =>
+          item.id === productId ? { ...item, quantity: newQuantity } : item
+        )
+      );
+    }
   };
 
   return (
@@ -166,7 +192,9 @@ export default function ImgMediaCard() {
           onClick={handleFabClick}
           sx={{ position: "fixed", bottom: 100, right: 200 }}
         >
-          <InfoIcon />
+          <Badge badgeContent={currentOrder.length} color="secondary">
+            <InfoIcon />
+          </Badge>
         </Fab>
       </Grid>
       <OrderDetailsModal
@@ -174,6 +202,7 @@ export default function ImgMediaCard() {
         onHide={() => setLgShow(false)}
         orderDetails={mergedOrderDetails}
         onDeleteAllOrderDetails={handleDeleteAllOrderDetails}
+        onQuantityChange={handleOrderModalQuantityChange}
       />
     </Container>
   );
