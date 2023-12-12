@@ -12,8 +12,7 @@ import MenuItem from "@mui/material/MenuItem";
 import Select, { SelectChangeEvent } from "@mui/material/Select";
 import Toast from "react-bootstrap/Toast";
 import api from "../../http-common";
-import { useParams } from 'react-router-dom';
-
+import { useParams } from "react-router-dom";
 
 function ProductDetail() {
   const { productId } = useParams();
@@ -27,7 +26,6 @@ function ProductDetail() {
   const [imageFile, setImageFile] = useState(null);
 
   const [imagePreview, setImagePreview] = useState(null);
-
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
@@ -50,14 +48,23 @@ function ProductDetail() {
     e.preventDefault();
 
     const formData = new FormData();
-    formData.append("name", name);
-    formData.append("importedPrice", importedPrice);
-    formData.append("retailPrice", retailPrice);
-    formData.append("imageFile", imageFile);
-    formData.append("categoryId", selectedCategoryId);
-
+    if (name !== "") {
+      formData.append("name", name);
+    }
+    if (importedPrice !== "") {
+      formData.append("importedPrice", importedPrice);
+    }
+    if (retailPrice !== "") {
+      formData.append("retailPrice", retailPrice);
+    }
+    if (imageFile !== null) {
+      formData.append("imageFile", imageFile);
+    }
+    if (selectedCategoryId !== "") {
+      formData.append("categoryId", selectedCategoryId);
+    }
     try {
-      await api.put("/products/"+productId, formData, {
+      await api.put("/products/" + productId, formData, {
         headers: {
           "Content-Type": "multipart/form-data",
         },
@@ -75,27 +82,32 @@ function ProductDetail() {
       console.error("Error fetching categories", error);
     }
   };
-  useEffect(() => {
-    // Replace 'your-url' with the actual URL you are fetching data from
-    fetchCategories();
-  }, []); // The empty array ensures the effect runs only once after initial render
 
   useEffect(() => {
+    
     const fetchProduct = async () => {
       try {
         const response = await api.get(`/products/${productId}`);
         setProduct(response.data);
-        setSelectedCategoryId(response.data.categoryId)
+        // setSelectedCategoryId(response.data.categoryId)
+        // setName(response.data.name)
+        // setImportedPrice(response.data.importedPrice)
+        // setRetailPrice(response.data.retailPrice)
+        // setImageFile(response.data.imagePath)
         if (response.data.imagePath) {
-            setImagePreview(`http://localhost:8085/dynamic/products/${productId}/${response.data.imagePath}`);
-          }
+          setImagePreview(
+            `http://localhost:8085/dynamic/products/${productId}/${response.data.imagePath}`
+          );
+        }
       } catch (error) {
         console.error("Error fetching product details", error);
       }
     };
 
     fetchProduct();
+    fetchCategories();
   }, [productId]);
+  
 
   if (!product) {
     return <div>Loading...</div>;
@@ -105,7 +117,9 @@ function ProductDetail() {
     <Container className="mt-3">
       <Row>
         <Col>
-        <h3>Update/Detail Product <u>{product.id}</u></h3>
+          <h3>
+            Update/Detail Product <u>{product.id}</u>
+          </h3>
           <Form onSubmit={addProductSubmit}>
             <Form.Group className="mb-3">
               <TextField
@@ -171,10 +185,7 @@ function ProductDetail() {
             </Form.Group>
             <Form.Group controlId="formFile" className="mb-3">
               <Form.Label>Product Image Here</Form.Label>
-              <Form.Control
-                type="file"
-                onChange={handleImageChange}
-              />
+              <Form.Control type="file" onChange={handleImageChange} />
             </Form.Group>
 
             <Button variant="primary" type="submit">
@@ -189,7 +200,7 @@ function ProductDetail() {
                 />
                 <strong className="me-auto">Message</strong>
               </Toast.Header>
-              <Toast.Body>Product Added</Toast.Body>
+              <Toast.Body>Product Updated</Toast.Body>
             </Toast>
           </Form>
         </Col>

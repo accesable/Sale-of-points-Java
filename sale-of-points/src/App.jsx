@@ -13,6 +13,7 @@ import ConfirmOrder from "./components/order/ConfirmOrder";
 import CustomerDetail from "./components/customer/CustomerDetails";
 import UserDetail from "./components/user/UserDetail";
 import UserProfile from "./components/user/UserProfile";
+import Customers from "./components/customer/Customers";
 
 
 
@@ -44,6 +45,7 @@ function App() {
           <Route path="/categories" element={<ProductCategories/>}/>
           <Route path="/checkout" element={<ConfirmOrder/>}/>
           <Route path="/customers/:customerId" element={<CustomerDetail/>}/>
+          <Route path="/customers" element={<Customers/>}/>
           <Route path="/users" element={<UserDetail/>}/>
           <Route path="/users/:userId" element={<UserProfile/>}/>
           {/* <Route path="/example" element={<DataTable />} /> */}

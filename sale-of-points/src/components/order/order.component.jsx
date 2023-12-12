@@ -107,7 +107,17 @@ export default function ImgMediaCard() {
     // Replace 'your-url' with the actual URL you are fetching data from
     fetchProducts();
     // localStorage.removeItem('currentOrder');
-  }, [currentOrder]); // The empty array ensures the effect runs only once after initial render
+    const orderDetailsWithProductInfo = currentOrder.map((orderItem) => {
+      const product = products.find((p) => p.id === orderItem.id);
+      return {
+        ...orderItem,
+        name: product?.name,
+        imagePath: product?.imagePath,
+        retailPrice: product?.retailPrice,
+      };
+    });
+    setMergedOrderDetails(orderDetailsWithProductInfo);
+  }, [currentOrder]);
 
   const [productQuantities, setProductQuantities] = useState({});
 
@@ -116,6 +126,7 @@ export default function ImgMediaCard() {
       ...prevQuantities,
       [productId]: newQuantity,
     }));
+    
   };
 
   const handleOrderModalQuantityChange = (productId, newQuantity) => {
@@ -124,16 +135,7 @@ export default function ImgMediaCard() {
       setCurrentOrder((prevOrder) =>
         prevOrder.filter((item) => item.id !== productId)
       );
-      const orderDetailsWithProductInfo = currentOrder.map((orderItem) => {
-        const product = products.find((p) => p.id === orderItem.id);
-        return {
-          ...orderItem,
-          name: product?.name,
-          imagePath: product?.imagePath,
-          retailPrice: product?.retailPrice,
-        };
-      });
-      setMergedOrderDetails(orderDetailsWithProductInfo);
+      
     } else {
       setCurrentOrder((prevOrder) =>
         prevOrder.map((item) =>

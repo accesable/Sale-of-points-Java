@@ -75,9 +75,9 @@ function MyTable() {
   return (
     <Container>
       <h1>Product</h1>
-      <Button variant="success" onClick={handleAddClick}>
+      {localStorage.getItem('roles')==='ROLE_ADMIN' && <Button variant="success" onClick={handleAddClick}>
         <PlusSquare size={20} />
-      </Button>
+      </Button>}
 
       <Table striped bordered hover>
         <thead>
@@ -98,7 +98,7 @@ function MyTable() {
               <td>{product.name}</td>
               <td>{product.categoryName}</td>
               {hasImportedPrice && <td>{`$${product.importedPrice}`}</td>}
-              <td>{product.retailPrice}</td>
+              <td>${product.retailPrice}</td>
               <td>{new Date(product.creationDate).toLocaleString()}</td>
               {hasImportedPrice && <td>
                 <Button variant="primary" onClick={() => handleInfoClick(product.id)}>

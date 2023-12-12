@@ -8,6 +8,8 @@ import org.nhutanh.pointofsale.repository.ProductRepository;
 import org.nhutanh.pointofsale.services.BarcodeService;
 import org.nhutanh.pointofsale.services.FileUtilsService;
 import org.nhutanh.pointofsale.services.QRCodeService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -109,6 +111,8 @@ public class ProductController {
         });
         return ResponseEntity.ok(productDTOList);
     }
+    Logger logger
+            = LoggerFactory.getLogger(ProductController.class);
 
     @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{id}")
@@ -139,8 +143,9 @@ public class ProductController {
                                            @RequestParam(required = false) String categoryId,
                                            @RequestParam(required = false) MultipartFile imageFile) {
         try {
-            Product product = productRepository.findById(id).orElse(null);
+            Product product = productRepository.findById(id).orElseThrow(IllegalAccessException::new);
             if (product == null) {
+
                 return ResponseEntity.notFound().build();
             }
 
@@ -168,6 +173,7 @@ public class ProductController {
                 String imagePath = FileUtilsService.saveImage(imageFile, product.getId());
                 product.setImagePath(imagePath);
             }
+            logger.info(String.valueOf(retailPrice));
 
             productRepository.save(product);
 

@@ -42,10 +42,6 @@ public class CustomerController {
         return ResponseEntity.ok(customerDTO);
     }
 
-    @PostMapping("")
-    public Customer createCustomer(@RequestBody Customer customer) {
-        return customerRepository.save(customer);
-    }
 
     @PutMapping("/{id}")
     public ResponseEntity<Customer> updateCustomer(@PathVariable Long id, @RequestBody Customer customerDetails) {

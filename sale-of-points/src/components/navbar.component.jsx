@@ -5,6 +5,8 @@ import NavDropdown from 'react-bootstrap/NavDropdown';
 import { Link,useNavigate } from 'react-router-dom';
 
 function NavBar({ onLogout }) {
+
+  const roles = localStorage.getItem('roles');
   const navigate = useNavigate();
   const handleLogoutClick = () => {
     if (onLogout) {
@@ -20,10 +22,11 @@ function NavBar({ onLogout }) {
         <Navbar.Collapse id="basic-navbar-nav">
           <Nav className="me-auto">
             <Nav.Link as={Link} to="/products">Products </Nav.Link>
-            <Nav.Link as={Link} to="/categories">Categories</Nav.Link>
+            {roles==='ROLE_ADMIN' && <Nav.Link as={Link} to="/categories">Categories</Nav.Link>}
             <Nav.Link as={Link} to="/orders">Orders</Nav.Link>
-            <Nav.Link as={Link} to="/users">Users</Nav.Link>
-            <NavDropdown title="Dropdown" id="basic-nav-dropdown">
+            {roles==='ROLE_ADMIN' && <Nav.Link as={Link} to="/users">Users</Nav.Link>}
+            <Nav.Link as={Link} to="/customers">Customers</Nav.Link>
+            {/* <NavDropdown title="Dropdown" id="basic-nav-dropdown">
               <NavDropdown.Item href="#action/3.1">Action</NavDropdown.Item>
               <NavDropdown.Item href="#action/3.2">
                 Another action
@@ -33,7 +36,7 @@ function NavBar({ onLogout }) {
               <NavDropdown.Item href="#action/3.4">
                 Separated link
               </NavDropdown.Item>
-            </NavDropdown>
+            </NavDropdown> */}
           </Nav>
           <Nav>
           <Nav.Link as={Link} to={`/users/${localStorage.getItem('userId')}`}>Hello {localStorage.getItem('username')}</Nav.Link>

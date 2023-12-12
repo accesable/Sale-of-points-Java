@@ -30,6 +30,8 @@ import org.nhutanh.pointofsale.services.email.EmailService;
 import org.nhutanh.pointofsale.services.email.EmailValidator;
 import org.nhutanh.pointofsale.services.email.EmailSender;
 import org.nhutanh.pointofsale.token.ConfirmationToken;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
@@ -96,6 +98,8 @@ public class AuthController {
               .Msg("Invalid Credentials").code("0").build());
     }
   }
+  Logger logger
+          = LoggerFactory.getLogger(AuthController.class);
 
   @PostMapping("/changePasswordOnFirstLogin")
   public ResponseEntity<?> changePassword( @RequestBody ChangePasswordRequest changePasswordRequest) {
@@ -106,18 +110,22 @@ public class AuthController {
 
       if (token!= null || !token.isEmpty() || !token.isBlank() ){
         inDataBaseUser = confirmationTokenService.getUserFromToken(token);
+
         if (inDataBaseUser == null) {
           return ResponseEntity.status(404).body(JsonResponseMessage.builder()
                   .code("0").Msg("No User Found").build());
         }
+        logger.info(inDataBaseUser.getUsername());
          authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(inDataBaseUser.getUsername(), inDataBaseUser.getUsername()));
       }else {
         inDataBaseUser = userRepository.findByUsername(changePasswordRequest.getUsername()).orElse(null);
+
         if (inDataBaseUser == null) {
           return ResponseEntity.status(404).body(JsonResponseMessage.builder()
                   .code("0").Msg("No User Found").build());
         }
+
         authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(changePasswordRequest.getUsername(), changePasswordRequest.getOldPassword()));
       }
@@ -173,8 +181,10 @@ public class AuthController {
     if (user == null) return ResponseEntity.status(404).body(JsonResponseMessage.builder().code("0").Msg("User Not Founded").build());
 
     if (user.getLastLogin()==null){
+      confirmationTokenService.setConfirmedAt(token);
+      int i = userRepository.enableUser(confirmationToken.getUser().getEmail());
       return ResponseEntity.status(200).body(JsonResponseMessage.builder()
-              .code("2").Msg("Token is Already Confirmed Please update password").build());
+              .code("2").Msg("Please update password").build());
     }
 
     if (confirmationToken.getConfirmedAt() != null) {
@@ -201,9 +211,7 @@ public class AuthController {
 //    Create User and append to Database
 
     signUpRequest.setUsername(signUpRequest.getEmail().split("@")[0]);
-    if (signUpRequest.getPassword()==null || signUpRequest.getPassword().isBlank() || signUpRequest.getPassword().isEmpty()){
-      signUpRequest.setPassword(signUpRequest.getUsername());
-    }
+    signUpRequest.setPassword(signUpRequest.getUsername());
 
     boolean isValidEmail = emailValidator.test(signUpRequest.getEmail());
     if (!isValidEmail){
@@ -270,7 +278,7 @@ public class AuthController {
     String baseUrl = request.getRequestURL().toString().replace(request.getRequestURI(), request.getContextPath());
 
 //    String link = baseUrl+"/api/auth/confirm?token=" + token;
-    String link = "http://localhost:3001/auth/firstLogin?logintoken="+token;
+    String link = "http://localhost:8085/auth/firstLogin?logintoken="+token;
     emailSender.send(
             signUpRequest.getEmail(),
             buildEmail(signUpRequest.getUsername(), link));
@@ -301,7 +309,7 @@ public class AuthController {
     String baseUrl = request.getRequestURL().toString().replace(request.getRequestURI(), request.getContextPath());
 
 //    String link = baseUrl+"/api/auth/confirm?token=" + token;
-    String link = "http://localhost:3001/auth/firstLogin?logintoken="+token;
+    String link = "http://localhost:8085/auth/firstLogin?logintoken="+token;
     emailSender.send(
             user.getEmail(),
             buildEmail(user.getUsername(), link));
