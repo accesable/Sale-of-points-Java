@@ -174,7 +174,7 @@ export default function ConfirmOrder() {
                             <div className="d-flex flex-row align-items-center">
                               <div>
                                 <MDBCardImage
-                                  src={`http://localhost:8085/dynamic/products/${item.id}/${item.imagePath}`}
+                                  src={`http://localhost:80/dynamic/products/${item.id}/${item.imagePath}`}
                                   fluid
                                   className="rounded-3"
                                   style={{ width: "65px" }}

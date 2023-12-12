@@ -155,7 +155,7 @@ export default function ImgMediaCard() {
                 component="img"
                 alt={product.name}
                 height="140"
-                image={`http://localhost:8085/dynamic/products/${product.id}/${product.imagePath}`}
+                image={`http://localhost:80/dynamic/products/${product.id}/${product.imagePath}`}
               />
               <CardContent>
                 <Typography gutterBottom variant="h5" component="div">

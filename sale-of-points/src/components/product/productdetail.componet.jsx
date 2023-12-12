@@ -96,7 +96,7 @@ function ProductDetail() {
         // setImageFile(response.data.imagePath)
         if (response.data.imagePath) {
           setImagePreview(
-            `http://localhost:8085/dynamic/products/${productId}/${response.data.imagePath}`
+            `http://localhost:80/dynamic/products/${productId}/${response.data.imagePath}`
           );
         }
       } catch (error) {

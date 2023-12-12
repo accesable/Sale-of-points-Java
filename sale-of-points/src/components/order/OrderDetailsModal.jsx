@@ -73,7 +73,7 @@ const OrderDetailsModal = ({
                       <MDBRow>
                         <MDBCol md="2">
                           <MDBCardImage
-                            src={`http://localhost:8085/dynamic/products/${item.id}/${item.imagePath}`}
+                            src={`http://localhost:80/dynamic/products/${item.id}/${item.imagePath}`}
                             fluid
                             alt="Phone"
                           />
