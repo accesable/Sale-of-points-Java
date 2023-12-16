@@ -48,6 +48,7 @@ public class User {
 
   private Date lastLogin;
   private String profilePicturePath;
+  private boolean isFistLogin = true;
 
   @ManyToMany(fetch = FetchType.LAZY)
   @JoinTable(  name = "user_roles", 

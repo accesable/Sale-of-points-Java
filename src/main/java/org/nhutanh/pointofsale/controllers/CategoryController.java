@@ -3,6 +3,7 @@ package org.nhutanh.pointofsale.controllers;
 
 import com.google.gson.Gson;
 import jakarta.persistence.Id;
+import jakarta.servlet.http.HttpServletRequest;
 import org.nhutanh.pointofsale.models.Category;
 import org.nhutanh.pointofsale.repository.CategoryRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,13 +27,15 @@ public class CategoryController {
     CategoryRepository categoryRepository;
 
     @GetMapping("")
-    public ResponseEntity<?> all(){
+    @PreAuthorize("(hasRole('ADMIN') or hasRole('USER')) and !#request.getAttribute('isFirstLogin')")
+    public ResponseEntity<?> all(HttpServletRequest request){
         List<Category> categories = categoryRepository.findAll().stream().toList();
 
         return ResponseEntity.ok(categories);
     }
 
     @PostMapping("")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> add(@RequestBody Category category){
 
         try {
@@ -45,6 +48,7 @@ public class CategoryController {
         }
     }
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> delete(@PathVariable String id){
         try {
             categoryRepository.deleteById(id);
@@ -61,6 +65,7 @@ public class CategoryController {
         }
     }
     @PutMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> update(@RequestBody Category category,@PathVariable String id){
         try {
             Category oldCategory = categoryRepository.findById(id).orElseThrow(ChangeSetPersister.NotFoundException::new);

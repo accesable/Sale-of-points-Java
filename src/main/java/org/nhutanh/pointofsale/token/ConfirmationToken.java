@@ -27,6 +27,8 @@ public class ConfirmationToken {
 
     @Column(nullable = false)
     private LocalDateTime expiresAt;
+    @Column(nullable = false)
+    private boolean isLoginable = true;
 
     private LocalDateTime confirmedAt;
 

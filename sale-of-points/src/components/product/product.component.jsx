@@ -2,6 +2,7 @@ import Table from "react-bootstrap/Table";
 import Container from "react-bootstrap/Container";
 import Button from "react-bootstrap/Button";
 import React, { useState, useEffect } from "react";
+import ErrorSnackbars from "../nofity/ErrorNotification";
 import {
   PencilSquare,
   InfoSquare,
@@ -19,6 +20,17 @@ function MyTable() {
 
   const handleDeleteClose = () => setDeleteShow(false);
   const handleDeleteShow = () => setDeleteShow(true);
+
+  // snack bar message
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [msg, setMsg] = useState("");
+  const handleOpenSnackbar = () => {
+    setSnackbarOpen(true);
+  };
+
+  const handleCloseSnackbar = () => {
+    setSnackbarOpen(false);
+  };
   
   const deleteProductRequest = async (e) => {
     e.preventDefault();
@@ -45,9 +57,6 @@ function MyTable() {
     navigate(`/products/${productId}`);
   };
 
-  const handleEditClick = () => {
-    // logic for edit click
-  };
 
   const handleDeleteClick = (product) => {
     setSelectedDeleteProductId(product); // Set the selected product ID
@@ -62,7 +71,9 @@ function MyTable() {
       console.log(response.data);
       setProducts(response.data);
     } catch (error) {
-      console.error("Error fetching products", error);
+      console.error("Error fetching products", error.response.data);
+      setMsg(error.response.data.msg)
+      handleOpenSnackbar();
     }
   };
   const hasImportedPrice = products.some(product => product.importedPrice !== 0);
@@ -137,6 +148,11 @@ function MyTable() {
           </Button>
         </Modal.Footer>
       </Modal>
+      <ErrorSnackbars
+            message={msg}
+            open={snackbarOpen}
+            handleClose={handleCloseSnackbar}
+          />
     </Container>
   );
 }

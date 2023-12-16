@@ -1,5 +1,6 @@
 package org.nhutanh.pointofsale.controllers;
 
+import jakarta.servlet.http.HttpServletRequest;
 import org.nhutanh.pointofsale.models.*;
 import org.nhutanh.pointofsale.models.controllermodels.JsonResponseMessage;
 import org.nhutanh.pointofsale.models.controllermodels.ProcessOrderRequest;
@@ -8,6 +9,7 @@ import org.nhutanh.pointofsale.payload.response.JwtResponse;
 import org.nhutanh.pointofsale.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
@@ -32,25 +34,29 @@ public class OrderController {
     private ProductRepository productRepository;
 
     @GetMapping("")
-    public ResponseEntity<List<Order>> getAllOrders() {
+    @PreAuthorize("(hasRole('ADMIN') or hasRole('USER')) and !#request.getAttribute('isFirstLogin')")
+    public ResponseEntity<List<Order>> getAllOrders(HttpServletRequest request) {
         return ResponseEntity.ok(orderRepository.findAll());
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Order> getOrderById(@PathVariable Long id) {
+    @PreAuthorize("(hasRole('ADMIN') or hasRole('USER')) and !#request.getAttribute('isFirstLogin')")
+    public ResponseEntity<Order> getOrderById(@PathVariable Long id,HttpServletRequest request) {
         Optional<Order> order = orderRepository.findById(id);
         return order.map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
     @PostMapping("")
-    public ResponseEntity<Order> createOrder(@RequestBody Order order) {
+    @PreAuthorize("(hasRole('ADMIN') or hasRole('USER')) and !#request.getAttribute('isFirstLogin')")
+    public ResponseEntity<Order> createOrder(@RequestBody Order order,HttpServletRequest request) {
         order.setOrderDate(new Date());
         return ResponseEntity.ok(orderRepository.save(order));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Order> updateOrder(@PathVariable Long id, @RequestBody UpdateOrderRequest orderDetails) {
+    @PreAuthorize("(hasRole('ADMIN') or hasRole('USER')) and !#request.getAttribute('isFirstLogin')")
+    public ResponseEntity<Order> updateOrder(@PathVariable Long id, @RequestBody UpdateOrderRequest orderDetails,HttpServletRequest request) {
         return orderRepository.findById(id)
                 .map(existingOrder -> {
                     // Here you can set properties from orderDetails to existingOrder
@@ -64,7 +70,8 @@ public class OrderController {
 
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> deleteOrder(@PathVariable Long id) {
+    @PreAuthorize("(hasRole('ADMIN') or hasRole('USER')) and !#request.getAttribute('isFirstLogin')")
+    public ResponseEntity<?> deleteOrder(@PathVariable Long id,HttpServletRequest request) {
         return orderRepository.findById(id)
                 .map(order -> {
                     orderRepository.delete(order);
@@ -76,7 +83,8 @@ public class OrderController {
     private UserRepository userRepository;
     @PostMapping("/batch")
     @Transactional
-    public ResponseEntity<?> processOrder(@RequestBody ProcessOrderRequest processOrderRequest) {
+    @PreAuthorize("(hasRole('ADMIN') or hasRole('USER')) and !#request.getAttribute('isFirstLogin')")
+    public ResponseEntity<?> processOrder(@RequestBody ProcessOrderRequest processOrderRequest, HttpServletRequest request) {
 //        Create a new Order
         Order requestOrder = new Order();
         requestOrder.setOrderDate(new Date());

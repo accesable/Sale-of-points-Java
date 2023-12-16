@@ -17,6 +17,7 @@ import { styled } from "@mui/system";
 import { Badge } from "@mui/material";
 import RemoveIcon from "@mui/icons-material/Remove";
 import AddIcon from "@mui/icons-material/Add";
+import ErrorSnackbars from "../nofity/ErrorNotification";
 
 const NumberInput = React.forwardRef(function CustomNumberInput(props, ref) {
   return (
@@ -42,7 +43,21 @@ const NumberInput = React.forwardRef(function CustomNumberInput(props, ref) {
   );
 });
 
+const imageBaseUrl =
+  process.env.REACT_APP_DYNAMIC_BASE_URL ||
+  "http://localhost:8085/dynamic/products/";
+
 export default function ImgMediaCard() {
+  // snack bar message
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [msg, setMsg] = useState("");
+  const handleOpenSnackbar = () => {
+    setSnackbarOpen(true);
+  };
+
+  const handleCloseSnackbar = () => {
+    setSnackbarOpen(false);
+  };
   const [lgShow, setLgShow] = useState(false);
 
   const [products, setProducts] = useState([]);
@@ -99,6 +114,9 @@ export default function ImgMediaCard() {
       console.log(response.data);
       setProducts(response.data);
     } catch (error) {
+      console.error("Error fetching products", error.response.data);
+      setMsg(error.response.data.msg);
+      handleOpenSnackbar();
       console.error("Error fetching products", error);
     }
   };
@@ -126,7 +144,6 @@ export default function ImgMediaCard() {
       ...prevQuantities,
       [productId]: newQuantity,
     }));
-    
   };
 
   const handleOrderModalQuantityChange = (productId, newQuantity) => {
@@ -135,7 +152,6 @@ export default function ImgMediaCard() {
       setCurrentOrder((prevOrder) =>
         prevOrder.filter((item) => item.id !== productId)
       );
-      
     } else {
       setCurrentOrder((prevOrder) =>
         prevOrder.map((item) =>
@@ -155,7 +171,7 @@ export default function ImgMediaCard() {
                 component="img"
                 alt={product.name}
                 height="140"
-                image={`http://localhost:80/dynamic/products/${product.id}/${product.imagePath}`}
+                image={`${imageBaseUrl}products/${product.id}/${product.imagePath}`}
               />
               <CardContent>
                 <Typography gutterBottom variant="h5" component="div">
@@ -205,6 +221,11 @@ export default function ImgMediaCard() {
         orderDetails={mergedOrderDetails}
         onDeleteAllOrderDetails={handleDeleteAllOrderDetails}
         onQuantityChange={handleOrderModalQuantityChange}
+      />
+      <ErrorSnackbars
+        message={msg}
+        open={snackbarOpen}
+        handleClose={handleCloseSnackbar}
       />
     </Container>
   );

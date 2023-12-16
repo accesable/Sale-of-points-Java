@@ -34,6 +34,12 @@ public interface UserRepository extends JpaRepository<User, Long> {
   @Transactional
   @Modifying
   @Query("UPDATE User a " +
+          "SET a.isFistLogin = false WHERE a.id = ?1")
+  int setFalseFirstLogin(@Param("id") Long id);
+
+  @Transactional
+  @Modifying
+  @Query("UPDATE User a " +
           "SET a.locked = true WHERE a.id = ?1")
   int lockUser(Long id);
 

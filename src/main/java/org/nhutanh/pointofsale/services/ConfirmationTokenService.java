@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.Objects;
 import java.util.Optional;
 
 @Service
@@ -32,5 +33,11 @@ public class ConfirmationTokenService {
     public int setConfirmedAt(String token) {
         return confirmationTokenRepository.updateConfirmedAt(
                 token, LocalDateTime.now());
+    }
+    public boolean isTokenLoginable(String token){
+        return Objects.requireNonNull(getToken(token).orElse(null)).isLoginable();
+    }
+    public int disableLoginable(String token){
+        return confirmationTokenRepository.disableLoginable(token);
     }
 }

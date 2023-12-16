@@ -11,7 +11,9 @@ import TableContainer from "@mui/material/TableContainer";
 import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import Paper from "@mui/material/Paper";
+import ErrorSnackbars from "../nofity/ErrorNotification";
 
+const imageBaseUrl = process.env.REACT_APP_DYNAMIC_BASE_URL;
 const UserProfile = () => {
   const { userId } = useParams();
 
@@ -23,13 +25,25 @@ const UserProfile = () => {
   const [userTransactions, setUserTransactions] = useState([]);
   const [updateTrigger, setUpdateTrigger] = useState(false);
 
+  // snack bar message
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [msg, setMsg] = useState("");
+  const handleOpenSnackbar = () => {
+    setSnackbarOpen(true);
+  };
+
+  const handleCloseSnackbar = () => {
+    setSnackbarOpen(false);
+  };
+
   useEffect(() => {
     const fetchUser = async () => {
       try {
         const response = await api.get(`/users/${userId}`);
         setUser(response.data);
       } catch (error) {
-        console.error("Error fetching product details", error);
+        handleOpenSnackbar();
+        setMsg(error.response.data.msg);
       }
     };
     const fetchTransactions = async () => {
@@ -37,13 +51,13 @@ const UserProfile = () => {
         const response = await api.get(`/users/getUserSale/${userId}`);
         setUserTransactions(response.data);
       } catch (error) {
-        console.error("Error fetching product details", error);
+        console.error("Error fetching Transaction details", error);
       }
     };
 
     fetchUser();
     fetchTransactions();
-  }, [userId,updateTrigger]);
+  }, [userId, updateTrigger]);
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
@@ -74,7 +88,7 @@ const UserProfile = () => {
         },
       });
       console.log(response.data);
-      setUpdateTrigger(prev => !prev);
+      setUpdateTrigger((prev) => !prev);
       // Handle successful update (e.g., show a message, update local state)
     } catch (error) {
       console.error("Error updating user profile", error);
@@ -90,8 +104,8 @@ const UserProfile = () => {
             <Col>
               <Image
                 className="mb-3"
-                style={{height : 250}}
-                src={`http://localhost:8085/dynamic/users/${user.id}/${user.profilePicturePath}`}
+                style={{ height: 250 }}
+                src={`${imageBaseUrl}users/${user.id}/${user.profilePicturePath}`}
                 roundedCircle
               />
               <h2>
@@ -201,9 +215,21 @@ const UserProfile = () => {
               )}
             </Col>
           </Row>
+          <ErrorSnackbars
+            message={msg}
+            open={snackbarOpen}
+            handleClose={handleCloseSnackbar}
+          />
         </Container>
       ) : (
-        <></>
+        <>
+          {" "}
+          <ErrorSnackbars
+            message={msg}
+            open={snackbarOpen}
+            handleClose={handleCloseSnackbar}
+          />
+        </>
       )}
     </>
   );

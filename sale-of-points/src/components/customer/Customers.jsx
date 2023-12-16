@@ -10,20 +10,21 @@ import { Container } from "react-bootstrap";
 import api from "../../http-common";
 import { Button } from "@mui/material";
 import { Link } from "react-router-dom";
-
-function createData(name, calories, fat, carbs, protein) {
-  return { name, calories, fat, carbs, protein };
-}
-
-const rows = [
-  createData("Frozen yoghurt", 159, 6.0, 24, 4.0),
-  createData("Ice cream sandwich", 237, 9.0, 37, 4.3),
-  createData("Eclair", 262, 16.0, 24, 6.0),
-  createData("Cupcake", 305, 3.7, 67, 4.3),
-  createData("Gingerbread", 356, 16.0, 49, 3.9),
-];
+import ErrorSnackbars from "../nofity/ErrorNotification";
+import { useState } from "react";
 
 export default function Customers() {
+
+      // snack bar message
+      const [snackbarOpen, setSnackbarOpen] = useState(false);
+      const [msg, setMsg] = useState("");
+      const handleOpenSnackbar = () => {
+        setSnackbarOpen(true);
+      };
+    
+      const handleCloseSnackbar = () => {
+        setSnackbarOpen(false);
+      };
 
     const [customers,setCustomers] = React.useState([])
 
@@ -32,7 +33,9 @@ export default function Customers() {
             const response = await api.get("customers");
             setCustomers(response.data)
         }catch(e){
-            console.log(e)
+          console.error("Error fetching products", e.response.data);
+          setMsg(e.response.data.msg);
+          handleOpenSnackbar();
         }
     }
 
@@ -71,6 +74,11 @@ export default function Customers() {
           </TableBody>
         </Table>
       </TableContainer>
+      <ErrorSnackbars
+        message={msg}
+        open={snackbarOpen}
+        handleClose={handleCloseSnackbar}
+      />
     </Container>
   );
 }

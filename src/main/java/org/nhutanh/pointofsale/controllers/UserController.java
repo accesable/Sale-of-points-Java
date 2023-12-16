@@ -1,6 +1,7 @@
 package org.nhutanh.pointofsale.controllers;
 
 
+import jakarta.servlet.http.HttpServletRequest;
 import org.nhutanh.pointofsale.dto.RoleDTO;
 import org.nhutanh.pointofsale.dto.TransactionDTO;
 import org.nhutanh.pointofsale.dto.UserDTO;
@@ -35,7 +36,10 @@ public class UserController {
     private UserRepository userRepository;
 
     @GetMapping("/{id}")
-    public ResponseEntity<?> getUserOnId(@PathVariable Long id){
+    @PreAuthorize("(hasRole('ADMIN') or hasRole('USER')) and !#request.getAttribute('isFirstLogin')")
+    public ResponseEntity<?> getUserOnId(
+            HttpServletRequest request,
+            @PathVariable Long id){
         User inDataUser = userRepository.findById(id).orElse(null);
         if (inDataUser==null) return ResponseEntity.notFound().build();
 
@@ -48,8 +52,8 @@ public class UserController {
         ).collect(Collectors.toSet())));
     }
     @GetMapping("")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<?> getUsers(){
+    @PreAuthorize("(hasRole('ADMIN') or hasRole('USER')) and !#request.getAttribute('isFirstLogin')")
+    public ResponseEntity<?> getUsers(HttpServletRequest request){
         Authentication authentication =  SecurityContextHolder.getContext().getAuthentication();
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
 
@@ -65,8 +69,8 @@ public class UserController {
         }).collect(Collectors.toList()));
     }
     @PostMapping("/lockUser/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<?> lockUser(@PathVariable Long id){
+    @PreAuthorize("(hasRole('ADMIN') or hasRole('USER')) and !#request.getAttribute('isFirstLogin')")
+    public ResponseEntity<?> lockUser(@PathVariable Long id,HttpServletRequest request){
         try {
             userRepository.lockUser(id);
 
@@ -77,8 +81,8 @@ public class UserController {
         }
     }
     @PostMapping("/unlockUser/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<?> unlockUser(@PathVariable Long id){
+    @PreAuthorize("(hasRole('ADMIN') or hasRole('USER')) and !#request.getAttribute('isFirstLogin')")
+    public ResponseEntity<?> unlockUser(@PathVariable Long id,HttpServletRequest request){
         try {
             userRepository.unlockUser(id);
 
@@ -91,8 +95,8 @@ public class UserController {
     @Autowired
     TransactionRepository transactionRepository;
     @GetMapping("/getUserSale/{id}")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('USER')")
-    public ResponseEntity<?> getUserSales(@PathVariable Long id){
+    @PreAuthorize("(hasRole('ADMIN') or hasRole('USER')) and !#request.getAttribute('isFirstLogin')")
+    public ResponseEntity<?> getUserSales(@PathVariable Long id,HttpServletRequest request){
         try {
             User user= userRepository.findById(id).orElseThrow(null);
             return ResponseEntity.ok(transactionRepository.findTransactionsWithOrdersByUserId(id)
@@ -108,8 +112,9 @@ public class UserController {
         }
     }
     @PutMapping("/updateUser/{userId}")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('USER')")
+    @PreAuthorize("(hasRole('ADMIN') or hasRole('USER')) and !#request.getAttribute('isFirstLogin')")
     public ResponseEntity<?> updateUserProfile(
+            HttpServletRequest request,
             @PathVariable Long userId,
             @RequestParam(required = false) String fullName,
             @RequestParam(required = false) String newPassword,

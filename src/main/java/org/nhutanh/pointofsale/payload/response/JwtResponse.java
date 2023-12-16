@@ -1,8 +1,16 @@
 package org.nhutanh.pointofsale.payload.response;
 
+import lombok.*;
+import org.springframework.beans.factory.annotation.Autowired;
+
 import java.util.Date;
 import java.util.List;
 
+@Getter
+@Setter
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class JwtResponse {
   private String token;
   private String type = "Bearer";
@@ -10,24 +18,18 @@ public class JwtResponse {
   private String username;
   private String email;
   private List<String> roles;
-  private Date lastLogin;
+  private boolean isFirstLogin;
 
-  public JwtResponse(String accessToken, Long id, String username, String email, Date lastLogin, List<String> roles) {
+  public JwtResponse(String accessToken, Long id, String username, String email, boolean isFirstLogin, List<String> roles) {
     this.token = accessToken;
     this.id = id;
     this.username = username;
     this.email = email;
-    this.lastLogin = lastLogin;
+    this.isFirstLogin = isFirstLogin;
     this.roles = roles;
   }
 
-  public Date getLastLogin() {
-    return lastLogin;
-  }
 
-  public void setLastLogin(Date lastLogin) {
-    this.lastLogin = lastLogin;
-  }
 
   public String getAccessToken() {
     return token;

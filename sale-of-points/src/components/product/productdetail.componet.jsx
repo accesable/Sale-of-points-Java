@@ -14,6 +14,8 @@ import Toast from "react-bootstrap/Toast";
 import api from "../../http-common";
 import { useParams } from "react-router-dom";
 
+
+const imageBaseUrl =process.env.REACT_APP_DYNAMIC_BASE_URL || "http://localhost:8085/dynamic/products/";
 function ProductDetail() {
   const { productId } = useParams();
   const [product, setProduct] = useState(null);
@@ -96,7 +98,7 @@ function ProductDetail() {
         // setImageFile(response.data.imagePath)
         if (response.data.imagePath) {
           setImagePreview(
-            `http://localhost:80/dynamic/products/${productId}/${response.data.imagePath}`
+            `${imageBaseUrl}products/${productId}/${response.data.imagePath}`
           );
         }
       } catch (error) {
@@ -218,24 +220,6 @@ function ProductDetail() {
         </Col>
       </Row>
     </Container>
-
-    // <Container>
-    //   <Card>
-    //     <Card.Body>
-    //       <Card.Title>{product.name}</Card.Title>
-    //       <Card.Text>
-    //         <strong>Category:</strong> {product.categoryName}<br/>
-    //         <strong>Imported Price:</strong> ${product.importedPrice}<br/>
-    //         <strong>Retail Price:</strong> ${product.retailPrice}<br/>
-    //         <strong>Created At:</strong> {new Date(product.creationDate).toLocaleString()}
-    //         <img
-    //             src={`http://localhost:8085/products/${product.id}/${product.imagePath}`}
-    //             alt="Preview"
-    //             style={{ width: "100%", marginTop: "10px" }}/>
-    //       </Card.Text>
-    //     </Card.Body>
-    //   </Card>
-    // </Container>
   );
 }
 

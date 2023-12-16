@@ -21,6 +21,7 @@ import { Clear, Info } from "@mui/icons-material";
 import Snackbar from '@mui/material/Snackbar';
 import MuiAlert from '@mui/material/Alert';
 
+const imageBaseUrl =process.env.REACT_APP_DYNAMIC_BASE_URL || "http://localhost:8085/dynamic/products/";
 export default function ConfirmOrder() {
   const navigate = useNavigate();
   const handleCoutinueOrder = () => {
@@ -71,6 +72,7 @@ export default function ConfirmOrder() {
       const response = await api.post("/orders/batch", orderData);
       console.log(response.data);
       toggleShowSuccess();
+      sessionStorage.setItem("currentOrder",[])
       // Handle successful response (e.g., navigate to a success page or display a success message)
     } catch (error) {
       if (error.response && error.response.data) {
@@ -174,7 +176,7 @@ export default function ConfirmOrder() {
                             <div className="d-flex flex-row align-items-center">
                               <div>
                                 <MDBCardImage
-                                  src={`http://localhost:80/dynamic/products/${item.id}/${item.imagePath}`}
+                                  src={`${imageBaseUrl}products/${item.id}/${item.imagePath}`}
                                   fluid
                                   className="rounded-3"
                                   style={{ width: "65px" }}

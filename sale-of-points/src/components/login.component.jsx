@@ -33,8 +33,8 @@ function LoginPage({ onLogin }) {
   const sendConfirmAndChangePasswordRequest = async (token) => {
     console.log("Token Sented =", token);
     try {
-      const response = await axios.get(
-        `http://localhost:8085/api/auth/confirm?token=${token}`,
+      const response = await api.get(
+        `auth/confirm?token=${token}`,
         {
           headers: {
             Accept: "application/json",
@@ -53,12 +53,6 @@ function LoginPage({ onLogin }) {
     }
   };
 
-  const [showChangePasswordModal, setShowChangePasswordModal] = useState(false);
-
-  const handleCloseChangePasswordModal = () =>
-    setShowChangePasswordModal(false);
-  const handleShowChangePasswordModal = () => setShowChangePasswordModal(true);
-
   const handleOpenSnackbar = () => {
     setSnackbarOpen(true);
   };
@@ -67,42 +61,18 @@ function LoginPage({ onLogin }) {
     setSnackbarOpen(false);
   };
 
-  const handleChangePasswordRequest = async (e) => {
-    e.preventDefault();
-    try {
-      const response = await axios.post(
-        "http://localhost:8085/api/auth/changePasswordOnFirstLogin",
-        {
-          username: username,
-          oldPassword: password,
-          updatedPassword: newPassword,
-        }
-      );
-      console.log(response.data);
-    } catch (error) {
-      if (error.response && error.response.data) {
-        // Accessing the response body sent by the server
-        // console.error("Error response body:", error.response.data);
-        setMsg(error.response.data.msg);
-        handleOpenSnackbar();
-      } else {
-        console.error("Error with no response body");
-      }
-      // Handle login error (e.g., show an error message)
-    }
-  };
 
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post(
-        "http://localhost:8085/api/auth/signin",
+      const response = await api.post(
+        "auth/signin",
         {
           username,
           password,
         }
       );
-      const { accessToken, roles, email, id: userId } = response.data;
+      const { accessToken, roles, email, id: userId,firstLogin } = response.data;
       if (accessToken) {
         // Save the JWT token
         localStorage.setItem("token", accessToken);
@@ -110,6 +80,7 @@ function LoginPage({ onLogin }) {
         localStorage.setItem("userId", userId);
         localStorage.setItem("userEmail", email);
         localStorage.setItem("username", username);
+        localStorage.setItem("isFirstLogin",firstLogin)
         onLogin(true);
       } else {
         console.log(response.data);
@@ -120,9 +91,6 @@ function LoginPage({ onLogin }) {
         // console.error("Error response body:", error.response.data);
         setMsg(error.response.data.msg);
         handleOpenSnackbar();
-        if (error.response.data.code === "2") {
-          handleShowChangePasswordModal();
-        }
       } else {
         console.error("Error with no response body");
       }
@@ -139,8 +107,8 @@ function LoginPage({ onLogin }) {
     try {
       console.log(newPassword);
       console.log(token);
-      const response = await axios.post(
-        "http://localhost:8085/api/auth/changePasswordOnFirstLogin",
+      const response = await api.post(
+        "auth/changePasswordOnFirstLogin",
         {
           updatedPassword: newPassword,
           token: token,
@@ -228,33 +196,6 @@ function LoginPage({ onLogin }) {
             open={snackbarOpen}
             handleClose={handleCloseSnackbar}
           />
-
-          <Modal
-            show={showChangePasswordModal}
-            onHide={handleCloseChangePasswordModal}
-          >
-            <Modal.Header closeButton>
-              <Modal.Title>Change Password On First Login</Modal.Title>
-            </Modal.Header>
-            <Modal.Body>
-              <Input
-                type="password"
-                placeholder="Type in here…"
-                onChange={(e) => setNewPassword(e.target.value)}
-              />
-            </Modal.Body>
-            <Modal.Footer>
-              <Button
-                variant="secondary"
-                onClick={handleCloseChangePasswordModal}
-              >
-                Close
-              </Button>
-              <Button variant="primary" onClick={handleChangePasswordRequest}>
-                Save Changes
-              </Button>
-            </Modal.Footer>
-          </Modal>
         </MDBContainer>
       )}
     </>

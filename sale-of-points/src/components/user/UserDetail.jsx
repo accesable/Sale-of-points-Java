@@ -17,6 +17,8 @@ import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
 import { Container,Modal } from "react-bootstrap";
 import Button from "@mui/material/Button";
 
+
+
 function Row(props) {
   const { row, onLockUser, onUnlockUser, onShowUserDetail, onResendToken } =
     props;
@@ -252,15 +254,15 @@ const UserDetail = () => {
           <Modal.Title>Add User</Modal.Title>
         </Modal.Header>
         <Modal.Body>
-        <TextField onChange={e=>setNewUserFullName(e.target.value)} fullWidth id="filled-basic" label="Employee Full Name" variant="filled" style={{marginBottom:20}} />
-        <TextField onChange={e=>setNewUserEmail(e.target.value)} fullWidth id="filled-basic" label="Employee Email" variant="filled" />
+        <TextField  onChange={e=>setNewUserFullName(e.target.value)} fullWidth id="filled-basic" label="Employee Full Name" variant="filled" style={{marginBottom:20}} />
+        <TextField type="email" onChange={e=>setNewUserEmail(e.target.value)} fullWidth id="filled-basic" label="Employee Email" variant="filled" />
         </Modal.Body>
         <Modal.Footer>
           <Button variant="contained" className="mx-2" color="secondary" onClick={handleCloseAddUserModal}>
             Close
           </Button>
           <Button variant="contained" color="primary" onClick={handleSendSignUpUserRequest}>
-            Save Changes
+            Create Account
           </Button>
         </Modal.Footer>
       </Modal>

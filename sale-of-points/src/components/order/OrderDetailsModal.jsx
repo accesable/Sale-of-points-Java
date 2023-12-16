@@ -16,6 +16,9 @@ import {
 } from "mdb-react-ui-kit";
 import { useNavigate } from "react-router-dom";
 
+
+
+const imageBaseUrl =process.env.REACT_APP_DYNAMIC_BASE_URL || "http://localhost:8085/dynamic/products/";
 const OrderDetailsModal = ({
   show,
   onHide,
@@ -73,7 +76,7 @@ const OrderDetailsModal = ({
                       <MDBRow>
                         <MDBCol md="2">
                           <MDBCardImage
-                            src={`http://localhost:80/dynamic/products/${item.id}/${item.imagePath}`}
+                            src={`${imageBaseUrl}products/${item.id}/${item.imagePath}`}
                             fluid
                             alt="Phone"
                           />

@@ -25,4 +25,10 @@ public interface ConfirmationTokenRepository
             "WHERE c.token = ?1")
     int updateConfirmedAt(String token,
                           LocalDateTime confirmedAt);
+    @Transactional
+    @Modifying
+    @Query("UPDATE ConfirmationToken c " +
+            "SET c.isLoginable = false " +
+            "WHERE c.token = ?1")
+    int disableLoginable(String token);
 }

@@ -1,8 +1,10 @@
 package org.nhutanh.pointofsale.controllers;
 
+import jakarta.servlet.http.HttpServletRequest;
 import org.nhutanh.pointofsale.dto.OrderDetailDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.nhutanh.pointofsale.models.OrderDetail;
 import org.nhutanh.pointofsale.repository.OrderDetailRepository;
@@ -19,10 +21,6 @@ public class OrderDetailController {
     @Autowired
     private OrderDetailRepository orderDetailRepository;
 
-    @GetMapping("")
-    public ResponseEntity<List<OrderDetail>> getAllOrderDetails() {
-        return ResponseEntity.ok(orderDetailRepository.findAll());
-    }
 
     @GetMapping("/{id}")
     public ResponseEntity<OrderDetail> getOrderDetailById(@PathVariable Long id) {
@@ -31,12 +29,9 @@ public class OrderDetailController {
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
-    @PostMapping("")
-    public ResponseEntity<OrderDetail> createOrderDetail(@RequestBody OrderDetail orderDetail) {
-        return ResponseEntity.ok(orderDetailRepository.save(orderDetail));
-    }
     @GetMapping("/find")
-    public ResponseEntity<?> getOrderDetailsOnOrderId(@RequestParam("orderId") Long orderId){
+    @PreAuthorize("(hasRole('ADMIN') or hasRole('USER')) and !#request.getAttribute('isFirstLogin')")
+    public ResponseEntity<?> getOrderDetailsOnOrderId(@RequestParam("orderId") Long orderId, HttpServletRequest request){
         List<OrderDetail> orderDetailList = orderDetailRepository.findOrderDetailsOnOrderId(orderId);
 
         List<OrderDetailDTO> orderDetailDTOList = new ArrayList<>();
@@ -48,27 +43,5 @@ public class OrderDetailController {
         return ResponseEntity.ok(orderDetailDTOList);
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<OrderDetail> updateOrderDetail(@PathVariable Long id, @RequestBody OrderDetail orderDetailDetails) {
-        return orderDetailRepository.findById(id)
-                .map(existingOrderDetail -> {
-                    existingOrderDetail.setOrder(orderDetailDetails.getOrder());
-                    existingOrderDetail.setProduct(orderDetailDetails.getProduct());
-                    existingOrderDetail.setQuantity(orderDetailDetails.getQuantity());
-                    existingOrderDetail.setPrice(orderDetailDetails.getPrice());
-                    return ResponseEntity.ok(orderDetailRepository.save(existingOrderDetail));
-                })
-                .orElseGet(() -> ResponseEntity.notFound().build());
-    }
-
-    @DeleteMapping("/{id}")
-    public ResponseEntity<?> deleteOrderDetail(@PathVariable Long id) {
-        return orderDetailRepository.findById(id)
-                .map(orderDetail -> {
-                    orderDetailRepository.delete(orderDetail);
-                    return ResponseEntity.ok().build();
-                })
-                .orElseGet(() -> ResponseEntity.notFound().build());
-    }
 }
 

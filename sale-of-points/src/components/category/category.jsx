@@ -55,21 +55,26 @@ const ProductCategories = () => {
   const handleInputChange = (event) => {
     setNewCategory(event.target.value);
   };
+  const roles = localStorage.getItem("roles");
 
   return (
     <Container>
       <h1>All Categories</h1>
       <InputGroup className="mb-3">
-        <InputGroup.Text id="inputGroup-sizing-default">
-          Add New Categoy Here
-        </InputGroup.Text>
-        <Form.Control
-          value={newCategory}
-          onChange={handleInputChange}
-          onKeyDown={handleKeyDown}
-          aria-label="Default"
-          aria-describedby="inputGroup-sizing-default"
-        />
+        {roles === "ROLE_ADMIN" && (
+          <>
+            <InputGroup.Text id="inputGroup-sizing-default">
+              Add New Categoy Here
+            </InputGroup.Text>
+            <Form.Control
+              value={newCategory}
+              onChange={handleInputChange}
+              onKeyDown={handleKeyDown}
+              aria-label="Default"
+              aria-describedby="inputGroup-sizing-default"
+            />
+          </>
+        )}
       </InputGroup>
       <ListGroup variant="flush">
         {categories.map((item, index) => (

@@ -37,10 +37,13 @@ public class UserDetailsImpl implements UserDetails {
   private Boolean enabled = false;
 
   private Date lastLogin;
+  private boolean isFistLogin;
 
   private Collection<? extends GrantedAuthority> authorities;
 
-  public UserDetailsImpl(Long id, String username, String email, String password,boolean locked, boolean enabled,Date lastLogin,
+  public UserDetailsImpl(Long id, String username, String email, String password,boolean locked, boolean enabled
+          ,Date lastLogin,
+      boolean isFistLogin,
       Collection<? extends GrantedAuthority> authorities) {
     this.id = id;
     this.username = username;
@@ -49,6 +52,7 @@ public class UserDetailsImpl implements UserDetails {
     this.locked = locked;
     this.enabled =enabled;
     this.lastLogin = lastLogin;
+    this.isFistLogin = isFistLogin;
     this.authorities = authorities;
   }
 
@@ -65,6 +69,7 @@ public class UserDetailsImpl implements UserDetails {
         user.getLocked(),
             user.getEnabled(),
         user.getLastLogin(),
+        user.isFistLogin(),
         authorities);
   }
 

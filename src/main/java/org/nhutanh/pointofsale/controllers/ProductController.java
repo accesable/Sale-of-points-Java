@@ -1,5 +1,6 @@
 package org.nhutanh.pointofsale.controllers;
 
+import jakarta.servlet.http.HttpServletRequest;
 import org.nhutanh.pointofsale.dto.ProductDTO;
 import org.nhutanh.pointofsale.models.Category;
 import org.nhutanh.pointofsale.models.Product;
@@ -81,9 +82,9 @@ public class ProductController {
         return ResponseEntity.ok(product);
     }
 
-    @PreAuthorize("hasRole('ADMIN') or hasRole('USER')")
+    @PreAuthorize("(hasRole('ADMIN')  and !#request.getAttribute('isFirstLogin') or hasRole('USER')  and !#request.getAttribute('isFirstLogin'))")
     @GetMapping("")
-    public ResponseEntity<List<ProductDTO>> getAllProducts() {
+    public ResponseEntity<List<ProductDTO>> getAllProducts(HttpServletRequest request) {
         List<Product> products = productRepository.findAll();
         List<ProductDTO> productDTOList = new ArrayList<>();
 
