@@ -78,8 +78,12 @@ const UserProfile = () => {
     if (imageFile) {
       formData.append("imageFile", imageFile);
     }
-    formData.append("fullName", fullName);
-    formData.append("newPassword", newPassWord);
+    if(fullName!==""){
+      formData.append("fullName", fullName);
+    }
+    if(newPassWord!==""){
+      formData.append("newPassword", newPassWord);
+    }
 
     try {
       const response = await api.put(`/users/updateUser/${userId}`, formData, {

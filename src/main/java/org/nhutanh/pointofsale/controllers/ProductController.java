@@ -75,10 +75,8 @@ public class ProductController {
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/{id}")
     public ResponseEntity<?> getProductById(@PathVariable String id) {
-        Product product = productRepository.findById(id).orElse(null);
-        if (product == null) {
-            return ResponseEntity.notFound().build();
-        }
+        Product product = productRepository.findById(id).orElseThrow(()-> new ProductNotFoundException("Product Not Founded"));
+
         return ResponseEntity.ok(product);
     }
 

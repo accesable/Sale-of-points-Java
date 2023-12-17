@@ -12,7 +12,7 @@ import MenuItem from "@mui/material/MenuItem";
 import Select, { SelectChangeEvent } from "@mui/material/Select";
 import Toast from "react-bootstrap/Toast";
 import api from "../../http-common";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 
 
 const imageBaseUrl =process.env.REACT_APP_DYNAMIC_BASE_URL || "http://localhost:8085/dynamic/products/";
@@ -85,17 +85,14 @@ function ProductDetail() {
     }
   };
 
+  const navigate = useNavigate();
+
   useEffect(() => {
     
     const fetchProduct = async () => {
       try {
         const response = await api.get(`/products/${productId}`);
         setProduct(response.data);
-        // setSelectedCategoryId(response.data.categoryId)
-        // setName(response.data.name)
-        // setImportedPrice(response.data.importedPrice)
-        // setRetailPrice(response.data.retailPrice)
-        // setImageFile(response.data.imagePath)
         if (response.data.imagePath) {
           setImagePreview(
             `${imageBaseUrl}products/${productId}/${response.data.imagePath}`
@@ -103,6 +100,7 @@ function ProductDetail() {
         }
       } catch (error) {
         console.error("Error fetching product details", error);
+        navigate("NotFounded")
       }
     };
 

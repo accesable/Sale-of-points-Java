@@ -14,6 +14,8 @@ import CustomerDetail from "./components/customer/CustomerDetails";
 import UserDetail from "./components/user/UserDetail";
 import UserProfile from "./components/user/UserProfile";
 import Customers from "./components/customer/Customers";
+import NotFound from "./components/nofity/NotFound";
+import DashBoard from "./components/dashboard/dashboard";
 
 
 
@@ -39,6 +41,7 @@ function App() {
         <>
         <NavBar onLogout={handleLogout} />
         <Routes>
+        <Route path="" element={<DashBoard />} />
           <Route path="/products" element={<MyTable />} />
           <Route path="/products/add" element={<AddProductForm />} />
           <Route path="/products/:productId" element={<ProductDetail />} />
@@ -49,6 +52,7 @@ function App() {
           <Route path="/customers" element={<Customers/>}/>
           <Route path="/users" element={<UserDetail/>}/>
           <Route path="/users/:userId" element={<UserProfile/>}/>
+          <Route path="*" element={<NotFound />} />
           {/* <Route path="/example" element={<DataTable />} /> */}
           {/* Other routes */}
         </Routes>

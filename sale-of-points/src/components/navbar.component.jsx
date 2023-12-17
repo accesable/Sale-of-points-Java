@@ -2,17 +2,73 @@ import Container from "react-bootstrap/Container";
 import Nav from "react-bootstrap/Nav";
 import Navbar from "react-bootstrap/Navbar";
 import { Link, useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import Typography from "@mui/material/Typography";
 import Modal from "@mui/material/Modal";
 import React from "react";
 import { TextField } from "@mui/material";
+import api from "../http-common";
 
 function NavBar({ onLogout }) {
   const [open, setOpen] = React.useState(false);
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
+
+  const [isFirstLogin, setIsFirstLogin] = useState(false);
+  const [userId, setUserId] = useState("");
+  const [username, setUsername] = useState("");
+
+  useEffect(() => {
+    const firstLogin = localStorage.getItem("isFirstLogin") === "true"; // Assuming it's stored as a string
+    const storedUserId = localStorage.getItem("userId");
+    const storedUsername = localStorage.getItem("username");
+
+    setIsFirstLogin(firstLogin);
+    setUserId(storedUserId);
+    setUsername(storedUsername);
+  }, []);
+
+  // New state for password
+  const [password, setPassword] = useState('');
+
+  const handleChangePassword = async () => {
+    const formData = new FormData();
+
+    if(password!==""){
+      formData.append("newPassword", password);
+    }
+
+    try {
+      const response = await api.put(`/users/updateUser/${userId}`, formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+      const { accessToken, roles, email, id,firstLogin } = response.data;
+      if (accessToken) {
+        // Save the JWT token
+        localStorage.setItem("token", accessToken);
+        localStorage.setItem("roles", roles);
+        localStorage.setItem("userId", id);
+        localStorage.setItem("userEmail", email);
+        localStorage.setItem("username", username);
+        localStorage.setItem("isFirstLogin",firstLogin)
+      } else {
+        console.log(response.data);
+      }
+      // Handle successful update (e.g., show a message, update local state)
+    } catch (error) {
+      console.error("Error updating user profile", error);
+      // Handle error (e.g., show error message)
+    }
+  };
+
+  // Function to update the password state as the user types
+  const handlePasswordChange = (event) => {
+    setPassword(event.target.value);
+  };
 
   const roles = localStorage.getItem("roles");
   const navigate = useNavigate();
@@ -63,7 +119,7 @@ function NavBar({ onLogout }) {
             </NavDropdown> */}
           </Nav>
           <Nav>
-            {localStorage.getItem("isFirstLogin") ? (
+            {isFirstLogin ? (
               <Nav.Link>
                 <Button
                   variant="contained"
@@ -74,11 +130,8 @@ function NavBar({ onLogout }) {
                 </Button>
               </Nav.Link>
             ) : (
-              <Nav.Link
-                as={Link}
-                to={`/users/${localStorage.getItem("userId")}`}
-              >
-                Hello {localStorage.getItem("username")}
+              <Nav.Link as={Link} to={`/users/${userId}`}>
+                Hello {username}
               </Nav.Link>
             )}
             <Nav.Link as={Link} to="/" onClick={handleLogoutClick}>
@@ -97,15 +150,20 @@ function NavBar({ onLogout }) {
           <Typography id="modal-modal-title" variant="h6" component="h2">
             Enter Your new Password
           </Typography>
-          <Typography id="modal-modal-description" sx={{ mt: 2 }}>
+          <Typography id="modal-modal-description" sx={{ my: 2 }}>
             <TextField
               id="filled-password-input"
               label="Password"
               type="password"
               variant="filled"
               fullWidth
+              value={password}
+              onChange={handlePasswordChange}
             />
           </Typography>
+          <Button variant="contained" onClick={handleChangePassword}>
+            Change Password
+          </Button>
         </Box>
       </Modal>
     </Navbar>

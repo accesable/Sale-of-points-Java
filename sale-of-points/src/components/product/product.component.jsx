@@ -11,9 +11,7 @@ import {
 } from "react-bootstrap-icons";
 import { useNavigate } from "react-router-dom";
 import Modal from "react-bootstrap/Modal";
-import axios from "axios";
 import api from "../../http-common";
-import { DataGrid } from '@mui/x-data-grid';
 
 function MyTable() {
   const [showDelete, setDeleteShow] = useState(false);

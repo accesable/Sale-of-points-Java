@@ -19,5 +19,11 @@ public class GlobalExceptionHandler {
                 .Msg("Access denied: You must change your password before accessing this resource.")
                 .code("0").build(), HttpStatus.FORBIDDEN);
     }
+    @ExceptionHandler(ProductNotFoundException.class)
+    public ResponseEntity<?> handleProductNotFoundedException(AccessDeniedException ex) {
+        return new ResponseEntity<>(JsonResponseMessage.builder()
+                .Msg("Resource Not Founded  ")
+                .code("0").build(), HttpStatus.FORBIDDEN);
+    }
 }
 

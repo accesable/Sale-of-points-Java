@@ -1,10 +1,8 @@
 import React, { useEffect } from "react";
 import { MDBContainer, MDBInput } from "mdb-react-ui-kit";
-import axios from "axios";
 import { useState } from "react";
 import ErrorSnackbars from "./nofity/ErrorNotification";
-import Input from "@mui/joy/Input";
-import { Modal, Container, Row, Col } from "react-bootstrap";
+import {Container, Row, Col } from "react-bootstrap";
 import { useLocation } from "react-router-dom";
 import api from "../http-common";
 import { TextField, Button } from "@mui/material";
@@ -114,7 +112,7 @@ function LoginPage({ onLogin }) {
           token: token,
         }
       );
-      const { accessToken, roles, email, id: userId } = response.data;
+      const { accessToken, roles, email, id: userId, firstLogin } = response.data;
       if (accessToken) {
         // Save the JWT token
         localStorage.setItem("token", accessToken);
@@ -122,6 +120,7 @@ function LoginPage({ onLogin }) {
         localStorage.setItem("userId", userId);
         localStorage.setItem("userEmail", email);
         localStorage.setItem("username", username);
+        localStorage.setItem("isFirstLogin",firstLogin)
         onLogin(true);
       } else {
         console.log(response.data);

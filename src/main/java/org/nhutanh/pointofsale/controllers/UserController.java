@@ -2,25 +2,31 @@ package org.nhutanh.pointofsale.controllers;
 
 
 import jakarta.servlet.http.HttpServletRequest;
+import org.jetbrains.annotations.NotNull;
 import org.nhutanh.pointofsale.dto.RoleDTO;
 import org.nhutanh.pointofsale.dto.TransactionDTO;
 import org.nhutanh.pointofsale.dto.UserDTO;
 import org.nhutanh.pointofsale.models.User;
 import org.nhutanh.pointofsale.models.controllermodels.JsonResponseMessage;
+import org.nhutanh.pointofsale.payload.response.JwtResponse;
 import org.nhutanh.pointofsale.repository.TransactionRepository;
 import org.nhutanh.pointofsale.repository.UserRepository;
+import org.nhutanh.pointofsale.security.jwt.JwtUtils;
 import org.nhutanh.pointofsale.security.userservices.UserDetailsImpl;
 import org.nhutanh.pointofsale.services.FileUtilsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.Date;
+import java.util.List;
 import java.util.stream.Collectors;
 
 @RestController
@@ -30,6 +36,8 @@ public class UserController {
 
     @Autowired
     PasswordEncoder encoder;
+    @Autowired
+    JwtUtils jwtUtils;
 
 
     @Autowired
@@ -111,8 +119,23 @@ public class UserController {
             return ResponseEntity.internalServerError().build();
         }
     }
+    @NotNull
+    private ResponseEntity<?> getUserCredentials(UserDetailsImpl userDetails, String jwt) {
+        List<String> roles = userDetails.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .collect(Collectors.toList());
+
+        int i = userRepository.updateLogin(userDetails.getId(), new Date());
+
+        return ResponseEntity.ok(new JwtResponse(jwt,
+                userDetails.getId(),
+                userDetails.getUsername(),
+                userDetails.getEmail(),
+                userDetails.isFistLogin(),
+                roles));
+    }
     @PutMapping("/updateUser/{userId}")
-    @PreAuthorize("(hasRole('ADMIN') or hasRole('USER')) and !#request.getAttribute('isFirstLogin')")
+    @PreAuthorize("(hasRole('ADMIN') or hasRole('USER'))")
     public ResponseEntity<?> updateUserProfile(
             HttpServletRequest request,
             @PathVariable Long userId,
@@ -131,6 +154,9 @@ public class UserController {
 
             if (newPassword != null && !newPassword.isEmpty()) {
                 user.setPassword(encoder.encode(newPassword));
+                if(user.isFistLogin()){
+                    user.setFistLogin(false);
+                }
             }
 
             if (imageFile != null && !imageFile.isEmpty()) {
@@ -142,7 +168,11 @@ public class UserController {
 //             Save the updated user
              userRepository.save(user);
 
-            return ResponseEntity.ok("User profile updated successfully");
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            String jwt = jwtUtils.generateJwtToken(authentication);
+            UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+
+            return getUserCredentials(userDetails, jwt);
         } catch (Exception e) {
             return ResponseEntity.internalServerError().body("Error: " + e.getMessage());
         }
