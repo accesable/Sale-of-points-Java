@@ -19,6 +19,9 @@ npm install pm2 -g
 
 
 apt install mysql
+sudo mysql_secure_installation
+sudo systemctl restart mysql
+
 sudo mysql
 CREATE DATABASE pos;
 // connect to the mysql instance in the VPS
