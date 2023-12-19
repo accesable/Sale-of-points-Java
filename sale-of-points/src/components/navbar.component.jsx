@@ -81,7 +81,7 @@ function NavBar({ onLogout }) {
   return (
     <Navbar expand="lg" className="bg-body-tertiary">
       <Container>
-        <Navbar.Brand as={Link} to={"/categories"}>
+        <Navbar.Brand as={Link} to={"/"}>
           POS AtoZ
         </Navbar.Brand>
         <Navbar.Toggle aria-controls="basic-navbar-nav" />
@@ -96,7 +96,7 @@ function NavBar({ onLogout }) {
               </Nav.Link>
             )}
             <Nav.Link as={Link} to="/orders">
-              Orders
+              Sale
             </Nav.Link>
             {roles === "ROLE_ADMIN" && (
               <Nav.Link as={Link} to="/users">

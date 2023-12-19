@@ -202,6 +202,11 @@ public class AuthController {
   public ResponseEntity<?> registerUser(@Valid @RequestBody SignupRequest signUpRequest) {
 
 //    Create User and append to Database
+    if (signUpRequest.getEmail()==null || signUpRequest.getEmail().isEmpty()){
+      return ResponseEntity
+              .badRequest()
+              .body(new MessageResponse("Error: NO EMAIL !"));
+    }
 
     signUpRequest.setUsername(signUpRequest.getEmail().split("@")[0]);
     signUpRequest.setPassword(signUpRequest.getUsername());
@@ -275,7 +280,7 @@ public class AuthController {
     emailSender.send(
             signUpRequest.getEmail(),
             buildEmail(signUpRequest.getUsername(), link));
-    return ResponseEntity.ok(new MessageResponse("User registered successfully! Please request the user to confirm via email"));
+    return ResponseEntity.ok(JsonResponseMessage.builder().Msg("1").Msg("New User Created And Confirmation is Sent"));
   }
   @Getter
   @Setter
@@ -306,7 +311,7 @@ public class AuthController {
     emailSender.send(
             user.getEmail(),
             buildEmail(user.getUsername(), link));
-    return ResponseEntity.ok(new MessageResponse("Token Resended"));
+    return ResponseEntity.ok(JsonResponseMessage.builder().code("1").Msg("Token Resent").build());
   }
 
 

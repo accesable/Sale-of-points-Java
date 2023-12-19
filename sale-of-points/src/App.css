@@ -1,6 +1,7 @@
 .App {
   text-align: center;
 }
+@import "rsuite/dist/rsuite.css";
 
 .App-logo {
   height: 40vmin;

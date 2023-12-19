@@ -20,14 +20,14 @@ function MyTable() {
   const handleDeleteShow = () => setDeleteShow(true);
 
   // snack bar message
-  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [errorSnackBar, setErrorSnackBar] = useState(false);
   const [msg, setMsg] = useState("");
-  const handleOpenSnackbar = () => {
-    setSnackbarOpen(true);
+  const handleOpenErrorSnackBar = () => {
+    setErrorSnackBar(true);
   };
 
-  const handleCloseSnackbar = () => {
-    setSnackbarOpen(false);
+  const handleCloseErrorSnackBar = () => {
+    setErrorSnackBar(false);
   };
   
   const deleteProductRequest = async (e) => {
@@ -41,7 +41,13 @@ function MyTable() {
       fetchProducts();
       handleDeleteClose();
     } catch (error) {
-      console.error("Error fetching products", error);
+      console.error("Error deleting products", error);
+      setMsg("Error Deleting this Product")
+      if(error.response.data.status===406){
+        setMsg("Cannot Delete This Product Due To It Existing In Orders !")
+      }
+      handleOpenErrorSnackBar();
+      
     }
   };
   const [selectedDeleteProductId, setSelectedDeleteProductId] = useState(null);
@@ -71,7 +77,7 @@ function MyTable() {
     } catch (error) {
       console.error("Error fetching products", error.response.data);
       setMsg(error.response.data.msg)
-      handleOpenSnackbar();
+      handleOpenErrorSnackBar();
     }
   };
   const hasImportedPrice = products.some(product => product.importedPrice !== 0);
@@ -148,8 +154,8 @@ function MyTable() {
       </Modal>
       <ErrorSnackbars
             message={msg}
-            open={snackbarOpen}
-            handleClose={handleCloseSnackbar}
+            open={errorSnackBar}
+            handleClose={handleCloseErrorSnackBar}
           />
     </Container>
   );

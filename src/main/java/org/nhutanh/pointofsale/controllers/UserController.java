@@ -60,7 +60,7 @@ public class UserController {
         ).collect(Collectors.toSet())));
     }
     @GetMapping("")
-    @PreAuthorize("(hasRole('ADMIN') or hasRole('USER')) and !#request.getAttribute('isFirstLogin')")
+    @PreAuthorize("hasRole('ADMIN')  and !#request.getAttribute('isFirstLogin')")
     public ResponseEntity<?> getUsers(HttpServletRequest request){
         Authentication authentication =  SecurityContextHolder.getContext().getAuthentication();
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
@@ -77,7 +77,7 @@ public class UserController {
         }).collect(Collectors.toList()));
     }
     @PostMapping("/lockUser/{id}")
-    @PreAuthorize("(hasRole('ADMIN') or hasRole('USER')) and !#request.getAttribute('isFirstLogin')")
+    @PreAuthorize("(hasRole('ADMIN')) and !#request.getAttribute('isFirstLogin')")
     public ResponseEntity<?> lockUser(@PathVariable Long id,HttpServletRequest request){
         try {
             userRepository.lockUser(id);
@@ -89,7 +89,7 @@ public class UserController {
         }
     }
     @PostMapping("/unlockUser/{id}")
-    @PreAuthorize("(hasRole('ADMIN') or hasRole('USER')) and !#request.getAttribute('isFirstLogin')")
+    @PreAuthorize("(hasRole('ADMIN')) and !#request.getAttribute('isFirstLogin')")
     public ResponseEntity<?> unlockUser(@PathVariable Long id,HttpServletRequest request){
         try {
             userRepository.unlockUser(id);

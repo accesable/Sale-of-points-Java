@@ -8,6 +8,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.util.Date;
 import java.util.List;
 
 public interface TransactionRepository extends JpaRepository<Transaction,Long> {
@@ -24,9 +25,9 @@ public interface TransactionRepository extends JpaRepository<Transaction,Long> {
     @Query("SELECT t FROM Transaction t JOIN FETCH t.order o WHERE o.user.id = :userId")
     List<Transaction> findTransactionsWithOrdersByUserId(@Param("userId") Long userId);
 
-    @Transactional
-    @Query("SELECT t FROM Transaction t WHERE t.transactionDate BETWEEN :startDate AND :endDate")
+    @Transactional(readOnly = true)
+    @Query("SELECT t FROM Transaction t JOIN FETCH t.order WHERE t.transactionDate BETWEEN :startDate AND :endDate")
     List<Transaction> findTransactionsBetweenDates(
-            @Param("startDate") LocalDate startDate,
-            @Param("endDate") LocalDate endDate);
+            @Param("startDate") Date startDate,
+            @Param("endDate") Date endDate);
 }

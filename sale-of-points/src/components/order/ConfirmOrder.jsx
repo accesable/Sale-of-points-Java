@@ -20,6 +20,7 @@ import debounce from "lodash.debounce";
 import { Clear, Info } from "@mui/icons-material";
 import Snackbar from '@mui/material/Snackbar';
 import MuiAlert from '@mui/material/Alert';
+import Nav from "react-bootstrap/Nav";
 
 const imageBaseUrl =process.env.REACT_APP_DYNAMIC_BASE_URL || "http://localhost:8085/dynamic/products/";
 export default function ConfirmOrder() {
@@ -107,6 +108,10 @@ export default function ConfirmOrder() {
     (sum, item) => sum + item.retailPrice * item.quantity,
     0
   );
+
+  const handleCustomerInfo = (id) =>{
+    navigate(`/customers/${id}`)
+  }
 
   const handleSelect = (event, value) => {
     // Find the selected customer from options
@@ -267,9 +272,9 @@ export default function ConfirmOrder() {
                                   <u>{selectedCustomer.address}</u>
                                 </li>
                                 <li key={selectedCustomer.id} className="mb-1">
-                                  <a href={`/customers/${selectedCustomer.id}`}>
+                                  <Nav.Link  as={Link} to={`/customers/${selectedCustomer.id}`}>
                                     <Info /> Check Customer Info
-                                  </a>
+                                  </Nav.Link>
                                 </li>
                               </ul>
                             </div>

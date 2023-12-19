@@ -13,7 +13,7 @@ import { Link } from "react-router-dom";
 import ErrorSnackbars from "../nofity/ErrorNotification";
 import { useState } from "react";
 
-export default function Customers() {
+const Customers = () => {
 
       // snack bar message
       const [snackbarOpen, setSnackbarOpen] = useState(false);
@@ -82,3 +82,4 @@ export default function Customers() {
     </Container>
   );
 }
+export default Customers;

@@ -7,6 +7,7 @@ import lombok.Setter;
 import org.nhutanh.pointofsale.models.Transaction;
 
 import java.util.Date;
+import java.util.List;
 
 
 @Getter
@@ -20,10 +21,19 @@ public class OrderDTO {
     private Long transactionId;
     private Date orderDate;
     private TransactionDTO transactionDTO;
+    private Transaction transaction;
+    private List<OrderDetailDTO> orderDetailDTOList;
 
-    public OrderDTO(Long customerId, Long transactionId, Date orderDate) {
+    public OrderDTO(Long orderId,Long customerId, Long transactionId, Date orderDate) {
+        this.orderId = orderId;
         this.customerId = customerId;
         this.transactionId = transactionId;
+        this.orderDate = orderDate;
+    }
+    public OrderDTO(Long orderId,Long customerId, Transaction transaction, Date orderDate) {
+        this.orderId = orderId;
+        this.customerId = customerId;
+        this.transactionDTO = new TransactionDTO(transaction);
         this.orderDate = orderDate;
     }
     public OrderDTO(Long customerId,  Date orderDate,Long orderId) {

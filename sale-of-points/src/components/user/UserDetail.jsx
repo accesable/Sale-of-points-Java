@@ -14,10 +14,10 @@ import Paper from "@mui/material/Paper";
 import { TextField } from "@mui/material";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
-import { Container,Modal } from "react-bootstrap";
+import { Container, Modal } from "react-bootstrap";
 import Button from "@mui/material/Button";
-
-
+import ErrorSnackbars from "../nofity/ErrorNotification";
+import SuccessSnackbars from "../nofity/SuccessNotification";
 
 function Row(props) {
   const { row, onLockUser, onUnlockUser, onShowUserDetail, onResendToken } =
@@ -46,9 +46,7 @@ function Row(props) {
         <TableCell align="right">{row.username}</TableCell>
         <TableCell align="right">{row.email}</TableCell>
         <TableCell align="right">{row.fullName}</TableCell>
-        <TableCell >
-          {row.locked ? `Locked` : `Not Locked`}
-        </TableCell>
+        <TableCell>{row.locked ? `Locked` : `Not Locked`}</TableCell>
         <TableCell align="right">
           {row.enabled ? `Enabled` : `Not Enabled`}
         </TableCell>
@@ -117,19 +115,36 @@ function Row(props) {
 
 const UserDetail = () => {
   const [showAddUserModal, setShowAddUserModal] = useState(false);
-  const [newUserFullName,setNewUserFullName] = useState('');
-  const [newUserEmail,setNewUserEmail] = useState('');
-
+  const [newUserFullName, setNewUserFullName] = useState("");
+  const [newUserEmail, setNewUserEmail] = useState("");
 
   const handleCloseAddUserModal = () => setShowAddUserModal(false);
   const handleShowAddUserModal = () => setShowAddUserModal(true);
 
+  // snack bar message
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [msg, setMsg] = useState("");
+  const handleOpenSnackbar = () => {
+    setSnackbarOpen(true);
+  };
 
+  const handleCloseSnackbar = () => {
+    setSnackbarOpen(false);
+  };
 
+  // snack bar message
+  const [errorSnackbarOpen, setErrorSnackbarOpen] = useState(false);
+  const handleOpenErrorSnackbar = () => {
+    setErrorSnackbarOpen(true);
+  };
 
-  const handleAddUser = () =>{
+  const handleCloseErrorSnackbar = () => {
+    setErrorSnackbarOpen(false);
+  };
+
+  const handleAddUser = () => {
     handleShowAddUserModal();
-  }
+  };
 
   const [users, setUsers] = useState(null);
 
@@ -163,15 +178,19 @@ const UserDetail = () => {
   const handleResendTokenUserRequest = async (userId, email) => {
     try {
       const data = { email: email };
-      await api.post(`auth/resendToken`, data);
+      const response = await api.post(`auth/resendToken`, data);
       // Update the local state to reflect the unlock change
       setUsers(
         users.map((user) =>
           user.id === userId ? { ...user, enabled: true } : user
         )
       );
+      handleOpenSnackbar();
+      setMsg(response.data.msg);
     } catch (error) {
       console.error("Error Resend Token", error);
+      handleOpenErrorSnackbar();
+      setMsg("Error Resend Token");
     }
   };
   const nagivate = useNavigate();
@@ -190,16 +209,18 @@ const UserDetail = () => {
     };
     fetchUsers();
   }, []);
-  const handleSendSignUpUserRequest = async ()=>{
+  const handleSendSignUpUserRequest = async () => {
     try {
-        const data = { email: newUserEmail,
-            fullName: newUserFullName
-        };
-        await api.post(`auth/signup`, data);
-      } catch (error) {
-        console.error("Sign up Request Error : ", error);
-      }
-  }
+      const data = { email: newUserEmail, fullName: newUserFullName };
+      const response = await api.post(`auth/signup`, data);
+      handleOpenSnackbar();
+      setMsg(response.data.msg);
+    } catch (error) {
+      console.error("Sign up Request Error : ", error);
+      handleOpenErrorSnackbar();
+      setMsg("Sign up Request Error");
+    }
+  };
 
   return (
     <Container>
@@ -254,18 +275,51 @@ const UserDetail = () => {
           <Modal.Title>Add User</Modal.Title>
         </Modal.Header>
         <Modal.Body>
-        <TextField  onChange={e=>setNewUserFullName(e.target.value)} fullWidth id="filled-basic" label="Employee Full Name" variant="filled" style={{marginBottom:20}} />
-        <TextField type="email" onChange={e=>setNewUserEmail(e.target.value)} fullWidth id="filled-basic" label="Employee Email" variant="filled" />
+          <TextField
+            onChange={(e) => setNewUserFullName(e.target.value)}
+            fullWidth
+            id="filled-basic"
+            label="Employee Full Name"
+            variant="filled"
+            style={{ marginBottom: 20 }}
+          />
+          <TextField
+            type="email"
+            onChange={(e) => setNewUserEmail(e.target.value)}
+            fullWidth
+            id="filled-basic"
+            label="Employee Email"
+            variant="filled"
+          />
         </Modal.Body>
         <Modal.Footer>
-          <Button variant="contained" className="mx-2" color="secondary" onClick={handleCloseAddUserModal}>
+          <Button
+            variant="contained"
+            className="mx-2"
+            color="secondary"
+            onClick={handleCloseAddUserModal}
+          >
             Close
           </Button>
-          <Button variant="contained" color="primary" onClick={handleSendSignUpUserRequest}>
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={handleSendSignUpUserRequest}
+          >
             Create Account
           </Button>
         </Modal.Footer>
       </Modal>
+      <SuccessSnackbars
+        message={msg}
+        open={snackbarOpen}
+        handleClose={handleCloseSnackbar}
+      />
+      <ErrorSnackbars
+        message={msg}
+        open={errorSnackbarOpen}
+        handleClose={handleCloseErrorSnackbar}
+      />
     </Container>
   );
 };

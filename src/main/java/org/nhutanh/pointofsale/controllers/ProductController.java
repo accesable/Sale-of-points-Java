@@ -4,6 +4,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import org.nhutanh.pointofsale.dto.ProductDTO;
 import org.nhutanh.pointofsale.models.Category;
 import org.nhutanh.pointofsale.models.Product;
+import org.nhutanh.pointofsale.models.controllermodels.JsonResponseMessage;
 import org.nhutanh.pointofsale.repository.CategoryRepository;
 import org.nhutanh.pointofsale.repository.ProductRepository;
 import org.nhutanh.pointofsale.services.BarcodeService;
@@ -20,6 +21,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -122,15 +124,14 @@ public class ProductController {
                 return ResponseEntity.notFound().build();
             }
 
-
             productRepository.deleteById(id);
-            FileUtilsService.deleteFolder(id);
 
             return ResponseEntity.ok().build();
-        } catch (IOException e) {
-            return ResponseEntity.internalServerError().body("Error deleting product files");
         } catch (Exception e) {
-            return ResponseEntity.internalServerError().body("Error deleting product");
+            return ResponseEntity.internalServerError().body(JsonResponseMessage
+                    .builder()
+                    .Msg("Cannot Delete This Product Due to it existing in order !")
+                    .code("0"));
         }
     }
     @PutMapping("/{id}")

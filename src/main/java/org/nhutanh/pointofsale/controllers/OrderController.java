@@ -1,12 +1,16 @@
 package org.nhutanh.pointofsale.controllers;
 
 import jakarta.servlet.http.HttpServletRequest;
+import org.nhutanh.pointofsale.dto.OrderDTO;
 import org.nhutanh.pointofsale.models.*;
 import org.nhutanh.pointofsale.models.controllermodels.JsonResponseMessage;
 import org.nhutanh.pointofsale.models.controllermodels.ProcessOrderRequest;
 import org.nhutanh.pointofsale.models.controllermodels.UpdateOrderRequest;
 import org.nhutanh.pointofsale.payload.response.JwtResponse;
 import org.nhutanh.pointofsale.repository.*;
+import org.nhutanh.pointofsale.security.jwt.JwtUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -32,11 +36,19 @@ public class OrderController {
     private TransactionRepository transactionRepository;
     @Autowired
     private ProductRepository productRepository;
+    // creating a logger
+    private static final Logger logger = LoggerFactory.getLogger(OrderController.class);
+
 
     @GetMapping("")
     @PreAuthorize("(hasRole('ADMIN') or hasRole('USER')) and !#request.getAttribute('isFirstLogin')")
-    public ResponseEntity<List<Order>> getAllOrders(HttpServletRequest request) {
-        return ResponseEntity.ok(orderRepository.findAll());
+    public ResponseEntity<?> getAllOrders(HttpServletRequest request) {
+        List<OrderDTO> orderDTOS = new ArrayList<>();
+        orderRepository.findAll().forEach(order -> {
+            logger.info(order.toString());
+            orderDTOS.add(new OrderDTO(order.getId(),order.getCustomer().getId(),order.getTransaction().getId(),order.getOrderDate()));
+        });
+        return ResponseEntity.ok(orderDTOS);
     }
 
     @GetMapping("/{id}")

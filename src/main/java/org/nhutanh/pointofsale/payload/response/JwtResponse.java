@@ -6,8 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import java.util.Date;
 import java.util.List;
 
-@Getter
-@Setter
+
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
@@ -30,6 +29,9 @@ public class JwtResponse {
   }
 
 
+  public boolean isFirstLogin() {
+    return isFirstLogin;
+  }
 
   public String getAccessToken() {
     return token;
