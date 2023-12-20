@@ -79,17 +79,21 @@ public class AuthController {
   private EmailService emailService;
   @Value("${nhutanh.app.ServerURL}")
   private String clientURL;
+  Logger logger
+          = LoggerFactory.getLogger(AuthController.class);
 
   @PostMapping("/signin")
   public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
 
     try {
+      logger.info("Client URL",clientURL);
       Authentication authentication = authenticationManager.authenticate(
               new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword()));
       SecurityContextHolder.getContext().setAuthentication(authentication);
       String jwt = jwtUtils.generateJwtToken(authentication);
 
       UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+
       return getUserCredentials(userDetails, jwt);
     }catch (BadCredentialsException e) {
       return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(JsonResponseMessage.builder()
@@ -106,8 +110,7 @@ public class AuthController {
               .Msg("Internal Server Error").build());
     }
   }
-  Logger logger
-          = LoggerFactory.getLogger(AuthController.class);
+
 
   @PostMapping("/changePasswordOnFirstLogin")
   public ResponseEntity<?> changePassword( @RequestBody ChangePasswordRequest changePasswordRequest) {
