@@ -2,6 +2,9 @@
 
 ## Using React For Fronted And Spring Boot API For Backend
 
+
+### Username/password : admin/admin
+### username/password : lovecraftmad08/nhutanh123
 Using JWT for authentication and authorization
 - Product management feature is done
 - Customer management features is done
