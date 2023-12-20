@@ -1,5 +1,5 @@
 FROM openjdk:17 as mysqldoc
-EXPOSE 8084
+EXPOSE 8080
 WORKDIR /app
 
 # Copy maven executable to the image
