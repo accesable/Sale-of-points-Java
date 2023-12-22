@@ -1,22 +1,30 @@
-FROM openjdk:17 as mysqldoc
+# Stage 1: Building React Application
+FROM node:latest as react-build
+WORKDIR /app
+ARG REACT_APP_API_BASE_URL
+ARG REACT_APP_DYNAMIC_BASE_URL
+ENV REACT_APP_API_BASE_URL $REACT_APP_API_BASE_URL
+ENV REACT_APP_DYNAMIC_BASE_URL $REACT_APP_DYNAMIC_BASE_URL
+COPY sale-of-points/package.json sale-of-points/package-lock.json ./
+RUN npm install
+COPY sale-of-points/ ./
+RUN npm run build
+
+# Stage 2: Building Spring Boot Application
+FROM openjdk:17 as spring-build
 EXPOSE 8080
 WORKDIR /app
-
-# Copy maven executable to the image
+COPY --from=react-build /app/build /app/src/main/resources/static
 COPY mvnw .
 COPY .mvn .mvn
-
-# Copy the pom.xml file
 COPY pom.xml .
-
-# Copy the project source
-COPY ./src ./src
-COPY ./pom.xml ./pom.xml
-
-RUN chmod 755 /app/mvnw
-
-#RUN ./mvnw dependency:go-offline -B
-
+COPY src ./src
+RUN chmod +x ./mvnw
 RUN ./mvnw package -DskipTests
-RUN ls -al
-ENTRYPOINT ["java","-jar","target/PointOfSale-0.0.1-SNAPSHOT.jar"]
+
+# Final Stage: Create the final image
+FROM openjdk:17
+WORKDIR /app
+COPY --from=spring-build /app/target/PointOfSale-0.0.1-SNAPSHOT.jar ./target/app.jar
+COPY --from=spring-build /app/src/dynamic ./src/dynamic
+ENTRYPOINT ["java","-jar","./target/app.jar"]

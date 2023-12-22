@@ -10,21 +10,27 @@ services:
     volumes:
       - ./pos.sql:/docker-entrypoint-initdb.d/pos.sql
     networks:
-      springboot-mysql-net:
+      - springboot-mysql-net
 
-  springboot-restful-webservices:
-    container_name: springboot-restful-webservices
+  springboot-react-app:
+    container_name: springboot-react-app
     build:
       context: .
       dockerfile: Dockerfile
+      args :
+        REACT_APP_API_BASE_URL : http://localhost:8080/api
+        REACT_APP_DYNAMIC_BASE_URL : http://localhost:8080/dynamic/
     ports:
-      - "8080:8080"
+      - "8080:8080"  # Spring Boot port
     depends_on:
       - mysqldb
     environment:
-      - SERVER_URL=http://localhost:3001/
+      - DB_URL=jdbc:mysql://mysqldb:3306/point_of_sale
+      - DB_USERNAME=root
+      - DB_PASSWORD=root
+      - SERVER_PORT=8080
     networks:
-      springboot-mysql-net:
+      - springboot-mysql-net
     restart: on-failure
 
 networks:
