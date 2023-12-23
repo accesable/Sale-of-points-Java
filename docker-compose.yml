@@ -25,10 +25,12 @@ services:
     depends_on:
       - mysqldb
     environment:
+#      SERVER_URL is the URL itself of this server with the port of this Spring Application
       - DB_URL=jdbc:mysql://mysqldb:3306/point_of_sale
       - DB_USERNAME=root
       - DB_PASSWORD=root
       - SERVER_PORT=8080
+      - SERVER_URL=http://localhost:8080/
     networks:
       - springboot-mysql-net
     restart: on-failure
