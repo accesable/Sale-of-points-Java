@@ -5,16 +5,9 @@
 
 ### Username/password : admin/admin
 ### username/password : lovecraftmad08/nhutanh123
-Using JWT for authentication and authorization
-- Product management feature is done
-- Customer management features is done
-  - Make Customer Table
-- Accounts management features 
-  - 
-- User Management features All Done
-- Transaction Processing Not Done Modify Later
-- REPORTING AND ANALYTICS Not Done
-
+## Demo Youtube Link & Deployment Link
+* [Youtube](https://www.youtube.com/watch?v=Kic3_mc6iDU)
+* [Deployment](https://java-pos.onrender.com/) It takes times to load all the JavaScript. Please wait around 4-6 minutes
 ## Models Design
 ![alt text](images/models.png)
 ### Account Management 
